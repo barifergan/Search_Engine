@@ -27,7 +27,9 @@ class ReadFile:
                 if file_type == '.parquet':
                     self.corpus_path = subdir
                     tweets_list += self.read_file(file)
-        print(tweets_list)
+                    print(tweets_list)
+        # print(tweets_list[3])
+
         return tweets_list
 
 
