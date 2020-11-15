@@ -89,7 +89,75 @@ class Parse:
         # print(url_parts)
         return url_parts
 
+    def parse_tagging(self, text):
+        txt_list = text.split()
+        tag_lst = []
+        for word in txt_list:
+            if word[0] == '@':
+                tag_lst.append(word[1:])
+        return tag_lst
 
+    def parse_precentages(self, text):
+        txt_list = text.split()
+        percent_lst = []
+        for i in range(len(txt_list)):
+            print(txt_list[i])
+            if txt_list[i].replace('.', '', 1).isdigit():
+                if txt_list[i+1] == 'percent' or txt_list[i+1] == 'percentage':
+                    percent_lst.append(txt_list[i] + '%')
+            elif txt_list[i][-1] == '%' and txt_list[i][:-1].isdigit():
+                percent_lst.append(txt_list[i][:-1] + '%')
+
+        return percent_lst
+
+    def parse_numbers(self, text):
+        txt_list = text.split()
+        numbers_lst = []
+        for i in range(len(txt_list)):
+            # number with commons
+            if txt_list[i].replace(',', '').replace('.', '', 1).isdigit():
+                number = txt_list[i].replace(',', '')
+            # number with digit
+            elif txt_list[i].replace('.', '', 1).isdigit():
+                index_of_digit = txt_list[i].find('.')
+                if int(txt_list[i][:index_of_digit]) < 1000:
+                    if txt_list[i][index_of_digit+1:].length() > 3:
+                        number = txt_list[i][:index_of_digit+2].rstrip('0')
+                    else:
+                        number = txt_list[i].rstrip('0')
+                elif 1000 <= int(txt_list[i][:index_of_digit]) < 1000000:
+                    numbers_lst.append(txt_list[i])
+
+                numbers_lst.append(txt_list[i].replace('.', '', 1))
+            # plain number
+            elif txt_list[i].isdigit():
+                if txt_list[i+1] == "Thousand":
+                    numbers_lst.append(txt_list[i] + 'K')
+                elif txt_list[i+1] == "Millon" or 1000000 <= int(txt_list[i+1]) < 1000000000:
+                    numbers_lst.append(txt_list[i] + 'M')
+                elif txt_list[i+1] == "Billon" or 1000000000 <= int(txt_list[i+1]):
+                    numbers_lst.append(txt_list[i] + 'B')
+                elif int(txt_list[1]) < 1000:
+                    numbers_lst.append(txt_list[i])
+                elif 1000 <= int(txt_list[i]) < 1000000:
+                    numbers_lst.append(txt_list[i][0] +)
+
+        return numbers_lst
+
+    def handle_digit(self, number_with_digit):
+        index_of_digit = number_with_digit.find('.')
+        complete_part = number_with_digit[:index_of_digit]
+        fraction_part = number_with_digit[index_of_digit+1:]
+        if fraction_part.length() > 3:
+            fraction_part = fraction_part[:3]
+        fraction_part = fraction_part.rstrip('0')
+        if 0 < int(complete_part) < 1000:
+            if fraction_part == '':
+                number = complete_part
+            else:
+                number = complete_part + '.' + fraction_part
+        elif 1000 <= int(complete_part) < 1000000:
+            index_of_digit -= 3
 
 
 
@@ -100,6 +168,10 @@ class Parse:
 
 text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
 text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
+text3 = 'this is @Ronen and @Bar'
+text4 = '6% 106 percent 10.6 percentage'
 parse1 = Parse()
 # parse1.parse_hashtags(text1)
 parse1.parse_url(text2)
+parse1.parse_tagging(text3)
+parse1.parse_precentages(text4)

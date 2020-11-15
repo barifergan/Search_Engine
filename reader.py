@@ -21,23 +21,19 @@ class ReadFile:
         root_dir = corpus_path
         tweets_list = []
 
-        for subdir, dirs, files in os.walk(root_dir): #iterate trough all inner folders and pulls out all parquet files, send to read_file function
+        # iterate trough all inner folders and pulls out all parquet files, send to read_file function
+        for subdir, dirs, files in os.walk(root_dir):
             for file in files:
                 file_type = file[-8:]
                 if file_type == '.parquet':
                     self.corpus_path = subdir
                     tweets_list += self.read_file(file)
-                    print(tweets_list)
+                    # print(tweets_list)
         # print(tweets_list[3])
 
         return tweets_list
 
 
-corpus_path1 = "C:\\Users\\barif\\PycharmProjects\\Search_Engine\\Data"
-read = ReadFile(corpus_path1)
-path1 = read.open_folder(corpus_path1)
-
-
-
-
-
+# corpus_path1 = "C:\\Users\\ronen\\Downloads\\Data"
+# read = ReadFile(corpus_path1)
+# path1 = read.open_folder(corpus_path1)
