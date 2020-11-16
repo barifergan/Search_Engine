@@ -2,6 +2,8 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from document import Document
 import re
+import math
+
 
 
 class Parse:
@@ -112,37 +114,93 @@ class Parse:
 
     def parse_numbers(self, text):
         txt_list = text.split()
-        numbers_lst = []
+        numbers_list = []
         for i in range(len(txt_list)):
-            # number with commons
             if txt_list[i].replace(',', '').replace('.', '', 1).isdigit():
-                number = txt_list[i].replace(',', '')
-            # number with digit
-            elif txt_list[i].replace('.', '', 1).isdigit():
-                index_of_digit = txt_list[i].find('.')
-                if int(txt_list[i][:index_of_digit]) < 1000:
-                    if txt_list[i][index_of_digit+1:].length() > 3:
-                        number = txt_list[i][:index_of_digit+2].rstrip('0')
+                if '.' in txt_list[i]:
+                    curr_num = float(txt_list[i].replace(',', ''))
+                else:
+                    curr_num = int(txt_list[i].replace(',', ''))
+
+                if curr_num < 1000:
+                    if txt_list[i + 1] == "Thousand":
+                            numbers_list.append(str(curr_num) + 'K')
+                    elif txt_list[i+1] == "Million":
+                        numbers_list.append(str(curr_num) + 'M')
+                    elif txt_list[i+1] == "Billion":
+                        numbers_list.append(str(curr_num) + 'B')
+                    elif (txt_list[i].replace('/', '').isdigit()) & ('/' in txt_list[i+1]):
+                        numbers_list.append(str(curr_num) + " " + txt_list[i+1])
                     else:
-                        number = txt_list[i].rstrip('0')
-                elif 1000 <= int(txt_list[i][:index_of_digit]) < 1000000:
-                    numbers_lst.append(txt_list[i])
+                        numbers_list.append(str(curr_num))
 
-                numbers_lst.append(txt_list[i].replace('.', '', 1))
-            # plain number
-            elif txt_list[i].isdigit():
-                if txt_list[i+1] == "Thousand":
-                    numbers_lst.append(txt_list[i] + 'K')
-                elif txt_list[i+1] == "Millon" or 1000000 <= int(txt_list[i+1]) < 1000000000:
-                    numbers_lst.append(txt_list[i] + 'M')
-                elif txt_list[i+1] == "Billon" or 1000000000 <= int(txt_list[i+1]):
-                    numbers_lst.append(txt_list[i] + 'B')
-                elif int(txt_list[1]) < 1000:
-                    numbers_lst.append(txt_list[i])
-                elif 1000 <= int(txt_list[i]) < 1000000:
-                    numbers_lst.append(txt_list[i][0] +)
+                elif 1000 <= curr_num < 1000000:
+                    curr_num = math.floor((curr_num / 1000) * 10 ** 3) / 10 ** 3
+                    # curr_num = '%.3f' % (curr_num / 1000)
+                    numbers_list.append(str(curr_num) + 'K')
+                elif 1000000 <= curr_num < 1000000000:
+                    curr_num = math.floor((curr_num / 1000000) * 10 ** 3) / 10 ** 3
+                    numbers_list.append(str(curr_num) + 'M')
+                elif curr_num >= 1000000000:
+                    curr_num = math.floor((curr_num / 1000000000) * 10 ** 3) / 10 ** 3
+                    numbers_list.append(str(curr_num) + 'B')
 
-        return numbers_lst
+        print(txt_list)
+        print(numbers_list)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return
+
+
+
+
+
+
+
+        # txt_list = text.split()
+        # numbers_lst = []
+        # for i in range(len(txt_list)):
+        #     # number with commons
+        #     if txt_list[i].replace(',', '').replace('.', '', 1).isdigit():
+        #         number = txt_list[i].replace(',', '')
+        #     # number with digit
+        #     elif txt_list[i].replace('.', '', 1).isdigit():
+        #         index_of_digit = txt_list[i].find('.')
+        #         if int(txt_list[i][:index_of_digit]) < 1000:
+        #             if txt_list[i][index_of_digit+1:].length() > 3:
+        #                 number = txt_list[i][:index_of_digit+2].rstrip('0')
+        #             else:
+        #                 number = txt_list[i].rstrip('0')
+        #         elif 1000 <= int(txt_list[i][:index_of_digit]) < 1000000:
+        #             numbers_lst.append(txt_list[i])
+        #
+        #         numbers_lst.append(txt_list[i].replace('.', '', 1))
+        #     # plain number
+        #     elif txt_list[i].isdigit():
+        #         if txt_list[i+1] == "Thousand":
+        #             numbers_lst.append(txt_list[i] + 'K')
+        #         elif txt_list[i+1] == "Millon" or 1000000 <= int(txt_list[i+1]) < 1000000000:
+        #             numbers_lst.append(txt_list[i] + 'M')
+        #         elif txt_list[i+1] == "Billon" or 1000000000 <= int(txt_list[i+1]):
+        #             numbers_lst.append(txt_list[i] + 'B')
+        #         elif int(txt_list[1]) < 1000:
+        #             numbers_lst.append(txt_list[i])
+        #         elif 1000 <= int(txt_list[i]) < 1000000:
+        #             numbers_lst.append(txt_list[i][0] +)
+        #
+        # return numbers_lst
 
     def handle_digit(self, number_with_digit):
         index_of_digit = number_with_digit.find('.')
@@ -166,12 +224,14 @@ class Parse:
 
 
 
-text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
-text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
-text3 = 'this is @Ronen and @Bar'
-text4 = '6% 106 percent 10.6 percentage'
-parse1 = Parse()
-# parse1.parse_hashtags(text1)
-parse1.parse_url(text2)
-parse1.parse_tagging(text3)
-parse1.parse_precentages(text4)
+# text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
+# text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
+# text3 = 'this is @Ronen and @Bar'
+# text4 = '6% 106 percent 10.6 percentage'
+# text5 = '204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
+# parse1 = Parse()
+# # parse1.parse_hashtags(text1)
+# parse1.parse_url(text2)
+# parse1.parse_tagging(text3)
+# parse1.parse_precentages(text4)
+# parse1.parse_numbers(text5)
