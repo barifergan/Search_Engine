@@ -1,9 +1,9 @@
+from nltk import RegexpTokenizer, TweetTokenizer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from document import Document
 import re
 import math
-
 
 
 class Parse:
@@ -17,7 +17,12 @@ class Parse:
         :param text:
         :return:
         """
-        text_tokens = word_tokenize(text)
+        # space_tokenizer = RegexpTokenizer("\s+", gaps=True)
+        # text_tokens = space_tokenizer.tokenize(text) \\another option to tokenize
+
+        tweet_tokenizer = TweetTokenizer()
+        text_tokens = tweet_tokenizer.tokenize(text)
+
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
         return text_tokens_without_stopwords
 
@@ -31,10 +36,16 @@ class Parse:
         tweet_date = doc_as_list[1]
         full_text = doc_as_list[2]
         url = doc_as_list[3]
-        retweet_text = doc_as_list[4]
-        retweet_url = doc_as_list[5]
-        quote_text = doc_as_list[6]
-        quote_url = doc_as_list[7]
+        indices = doc_as_list[4]
+        retweet_text = doc_as_list[5]
+        retweet_url = doc_as_list[6]
+        retweet_indices = doc_as_list[7]
+        quote_text = doc_as_list[8]
+        quote_url = doc_as_list[9]
+        quote_indices = doc_as_list[10]
+        retweet_quote_text = doc_as_list[11]
+        retweet_quote_url = doc_as_list[12]
+        retweet_quote_indices = doc_as_list[13]
         term_dict = {}
         tokenized_text = self.parse_sentence(full_text)
 
@@ -46,8 +57,10 @@ class Parse:
             else:
                 term_dict[term] += 1
 
-        document = Document(tweet_id, tweet_date, full_text, url, retweet_text, retweet_url, quote_text,
-                            quote_url, term_dict, doc_length)
+        document = Document(tweet_id, tweet_date, full_text, url, indices, retweet_text, retweet_url, retweet_indices,
+                            quote_text,
+                            quote_url, quote_indices, retweet_quote_text, retweet_quote_url, retweet_quote_indices,
+                            term_dict, doc_length)
         return document
 
     def parse_hashtags(self, text):
@@ -59,14 +72,14 @@ class Parse:
                 if hashtag.find('_') != -1:
                     hashtag_lst = hashtag.split('_')
                     merge_words = hashtag.replace('_', '')
-                    hashtag_lst.append('#'+merge_words)
+                    hashtag_lst.append('#' + merge_words)
 
                 elif any(x.isupper() for x in hashtag):
                     pos = [i for i, e in enumerate(hashtag + 'A') if e.isupper()]
                     pos.insert(0, 0)
                     hashtag_lower = hashtag.lower()
                     hashtag_lst = [hashtag_lower[pos[j]:pos[j + 1]] for j in range(len(pos) - 1)]
-                    hashtag_lst.append('#'+hashtag_lower)
+                    hashtag_lst.append('#' + hashtag_lower)
 
                 else:
                     hashtag_lst.append(hashtag)
@@ -105,7 +118,7 @@ class Parse:
         for i in range(len(txt_list)):
             print(txt_list[i])
             if txt_list[i].replace('.', '', 1).isdigit():
-                if txt_list[i+1] == 'percent' or txt_list[i+1] == 'percentage':
+                if txt_list[i + 1] == 'percent' or txt_list[i + 1] == 'percentage':
                     percent_lst.append(txt_list[i] + '%')
             elif txt_list[i][-1] == '%' and txt_list[i][:-1].isdigit():
                 percent_lst.append(txt_list[i][:-1] + '%')
@@ -124,13 +137,13 @@ class Parse:
 
                 if curr_num < 1000:
                     if txt_list[i + 1] == "Thousand":
-                            numbers_list.append(str(curr_num) + 'K')
-                    elif txt_list[i+1] == "Million":
+                        numbers_list.append(str(curr_num) + 'K')
+                    elif txt_list[i + 1] == "Million":
                         numbers_list.append(str(curr_num) + 'M')
-                    elif txt_list[i+1] == "Billion":
+                    elif txt_list[i + 1] == "Billion":
                         numbers_list.append(str(curr_num) + 'B')
-                    elif (txt_list[i].replace('/', '').isdigit()) & ('/' in txt_list[i+1]):
-                        numbers_list.append(str(curr_num) + " " + txt_list[i+1])
+                    elif (txt_list[i].replace('/', '').isdigit()) & ('/' in txt_list[i + 1]):
+                        numbers_list.append(str(curr_num) + " " + txt_list[i + 1])
                     else:
                         numbers_list.append(str(curr_num))
 
@@ -150,11 +163,10 @@ class Parse:
 
         return numbers_list
 
-
     def handle_digit(self, number_with_digit):
         index_of_digit = number_with_digit.find('.')
         complete_part = number_with_digit[:index_of_digit]
-        fraction_part = number_with_digit[index_of_digit+1:]
+        fraction_part = number_with_digit[index_of_digit + 1:]
         if fraction_part.length() > 3:
             fraction_part = fraction_part[:3]
         fraction_part = fraction_part.rstrip('0')
@@ -168,12 +180,6 @@ class Parse:
 
     def parse_names(self, text):
         raise NotImplemented
-
-
-
-
-
-
 
 
 # text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
