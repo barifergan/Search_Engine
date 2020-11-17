@@ -145,62 +145,11 @@ class Parse:
                     curr_num = math.floor((curr_num / 1000000000) * 10 ** 3) / 10 ** 3
                     numbers_list.append(str(curr_num) + 'B')
 
-        print(txt_list)
-        print(numbers_list)
+        # print(txt_list)
+        # print(numbers_list)
 
+        return numbers_list
 
-
-
-
-
-
-
-
-
-
-
-
-
-        return
-
-
-
-
-
-
-
-        # txt_list = text.split()
-        # numbers_lst = []
-        # for i in range(len(txt_list)):
-        #     # number with commons
-        #     if txt_list[i].replace(',', '').replace('.', '', 1).isdigit():
-        #         number = txt_list[i].replace(',', '')
-        #     # number with digit
-        #     elif txt_list[i].replace('.', '', 1).isdigit():
-        #         index_of_digit = txt_list[i].find('.')
-        #         if int(txt_list[i][:index_of_digit]) < 1000:
-        #             if txt_list[i][index_of_digit+1:].length() > 3:
-        #                 number = txt_list[i][:index_of_digit+2].rstrip('0')
-        #             else:
-        #                 number = txt_list[i].rstrip('0')
-        #         elif 1000 <= int(txt_list[i][:index_of_digit]) < 1000000:
-        #             numbers_lst.append(txt_list[i])
-        #
-        #         numbers_lst.append(txt_list[i].replace('.', '', 1))
-        #     # plain number
-        #     elif txt_list[i].isdigit():
-        #         if txt_list[i+1] == "Thousand":
-        #             numbers_lst.append(txt_list[i] + 'K')
-        #         elif txt_list[i+1] == "Millon" or 1000000 <= int(txt_list[i+1]) < 1000000000:
-        #             numbers_lst.append(txt_list[i] + 'M')
-        #         elif txt_list[i+1] == "Billon" or 1000000000 <= int(txt_list[i+1]):
-        #             numbers_lst.append(txt_list[i] + 'B')
-        #         elif int(txt_list[1]) < 1000:
-        #             numbers_lst.append(txt_list[i])
-        #         elif 1000 <= int(txt_list[i]) < 1000000:
-        #             numbers_lst.append(txt_list[i][0] +)
-        #
-        # return numbers_lst
 
     def handle_digit(self, number_with_digit):
         index_of_digit = number_with_digit.find('.')
@@ -216,6 +165,9 @@ class Parse:
                 number = complete_part + '.' + fraction_part
         elif 1000 <= int(complete_part) < 1000000:
             index_of_digit -= 3
+
+    def parse_names(self, text):
+        raise NotImplemented
 
 
 
@@ -235,3 +187,5 @@ class Parse:
 # parse1.parse_tagging(text3)
 # parse1.parse_precentages(text4)
 # parse1.parse_numbers(text5)
+
+parse2 = Parse()
