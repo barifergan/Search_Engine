@@ -31,6 +31,8 @@ class Parse:
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
                 after_parse.append(hashtag)
 
+            # if text_tokens_without_stopwords[i][]
+
 
         return text_tokens_without_stopwords
 
@@ -104,6 +106,7 @@ class Parse:
         url_parts.pop(1)
         url_parts.insert(1, sub_url1)
         url_parts.insert(2, sub_url2)
+
         for i in range(len(url_parts)):
             if url_parts[i][0] == '?':
                 word = url_parts[i][1:]

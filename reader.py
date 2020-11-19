@@ -15,11 +15,16 @@ class ReadFile:
         """
         root_dir = self.corpus_path
         exist = 0
+
         for curr_dir in os.walk(root_dir):
-            if curr_dir[2][0] == file_name:
-                path_file = curr_dir[0]
-                exist = 1
-                break
+            for file in curr_dir[2]:
+                if file == file_name:
+                    path_file = curr_dir[0]
+                    exist = 1
+                    break
+            else:
+                continue
+            break
 
         if exist == 1:
             full_path = os.path.join(path_file, file_name)

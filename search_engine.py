@@ -1,3 +1,5 @@
+import os
+
 from reader import ReadFile
 from configuration import ConfigClass
 from parser_module import Parse
@@ -11,19 +13,24 @@ def run_engine():
 
     :return:
     """
-    number_of_documents = 0
-
     config = ConfigClass()
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse()
     indexer = Indexer(config)
 
-    documents_list = r.read_file('covid19_07-11.snappy.parquet')
-    # Iterate over every document in the file
-    for idx, document in enumerate(documents_list):
-        # parse the document
-        parsed_document = p.parse_doc(document)
-        number_of_documents += 1
+    corpus_path = config.get__corpusPath()
+    parsed_documents = []
+    for subdir, dirs, files in os.walk(corpus_path):
+        for file in files:
+            file_type = file[-8:]
+            if file_type == '.parquet':
+                file_name = file
+                documents_list = r.read_file(file_name)
+                for idx, document in enumerate(documents_list):
+                    # parse the document
+                    parsed_document = p.parse_doc(document)
+                    parsed_documents.append(parsed_document)
+
         # index the document data
         indexer.add_new_doc(parsed_document)
     print('Finished parsing and indexing. Starting to export files')
