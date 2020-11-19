@@ -75,26 +75,27 @@ class Parse:
         return document
 
     def parse_hashtags(self, token):
-        # txt_list = text.split()
         hashtag_lst = []
-        # for word in txt_list:
-        #     if word[0] == '#':
         hashtag = token.replace('#', '')
         if hashtag.find('_') != -1:
-            hashtag_lst = hashtag.split('_')
+            hashtag_lst = [s.lower() for s in hashtag.split('_')]
             merge_words = hashtag.replace('_', '')
-            hashtag_lst.append('#' + merge_words)
+            hashtag_lst.append('#' + merge_words.lower())
 
         elif any(x.isupper() for x in hashtag):
-            pos = [i for i, e in enumerate(hashtag + 'A') if e.isupper()]
-            pos.insert(0, 0)
-            hashtag_lower = hashtag.lower()
-            hashtag_lst = [hashtag_lower[pos[j]:pos[j + 1]] for j in range(len(pos) - 1)]
-            hashtag_lst.append('#' + hashtag_lower)
-
+            condition = False
+            for i in range(len(token) - 1):
+                if token[i].isupper() and token[i + 1].isupper():
+                    condition = True
+                    break
+            if condition:
+                hashtag_lst = [s.lower() for s in re.findall('|[A-Z]+|[a-z]+|', token)]
+            else:
+                hashtag_lst = [s.lower() for s in re.findall('|[A-Z]+[a-z]*|[a-z]+|', token)]
+            while '' in hashtag_lst: hashtag_lst.remove('')
+            hashtag_lst.append('#' + hashtag.lower())
         else:
             hashtag_lst.append(hashtag)
-
         return hashtag_lst
 
     def parse_url(self, text):
