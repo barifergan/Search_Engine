@@ -17,11 +17,12 @@ class Parse:
         :param text:
         :return:
         """
-        # space_tokenizer = RegexpTokenizer("\s+", gaps=True)
-        # text_tokens = space_tokenizer.tokenize(text) \\another option to tokenize
+        space_tokenizer = RegexpTokenizer("\s+", gaps=True)
+        text_tokens = space_tokenizer.tokenize(text)
 
-        tweet_tokenizer = TweetTokenizer()
-        text_tokens = tweet_tokenizer.tokenize(text)
+
+        # tweet_tokenizer = TweetTokenizer()
+        # text_tokens = tweet_tokenizer.tokenize(text)
 
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
         return text_tokens_without_stopwords
