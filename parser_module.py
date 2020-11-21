@@ -25,16 +25,39 @@ class Parse:
         # text_tokens = tweet_tokenizer.tokenize(text)
 
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
+        parsed = False
 
         for i in range(len(text_tokens_without_stopwords)):
             if text_tokens_without_stopwords[i][0] == '#':
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
                 after_parse.append(hashtag)
+                parsed = True
 
-            # if text_tokens_without_stopwords[i][]
+            if text_tokens_without_stopwords[i][0] == '@':
+                tag = self.parse_hashtags(text_tokens_without_stopwords[i])
+                after_parse.append(tag)
+                parsed = True
 
+            if 'http' in text_tokens_without_stopwords[i]:
+                url = self.parse_url(text_tokens_without_stopwords[i])
+                after_parse.append(url)
+                parsed = True
 
-        return text_tokens_without_stopwords
+            if ('%' in text_tokens_without_stopwords[i]) | (text_tokens_without_stopwords[i + 1] == 'percent') | (
+                    text_tokens_without_stopwords[i + 1] == 'percentage'):
+                percentage = self.parse_percentages(text_tokens_without_stopwords[i])
+                after_parse.append(percentage)
+                parsed = True
+
+            if text_tokens_without_stopwords[i].isdigit():
+                number = self.parse_numbers(text_tokens_without_stopwords[i])
+                after_parse.append(number)
+                parsed = True
+
+            if parsed == False:
+                after_parse.append(text_tokens_without_stopwords[i])
+
+        return after_parse
 
     def parse_doc(self, doc_as_list):
         """
@@ -98,9 +121,9 @@ class Parse:
             hashtag_lst.append(hashtag)
         return hashtag_lst
 
-    def parse_url(self, text):
+    def parse_url(self, token):
 
-        url_parts = re.split('://|/|:|=', text)
+        url_parts = re.split('://|/|:|=', token)
 
         sub_url1 = url_parts[1][0:3]
         sub_url2 = url_parts[1][4:]
@@ -116,30 +139,17 @@ class Parse:
         # print(url_parts)
         return url_parts
 
-    def parse_tagging(self, text):
-        txt_list = text.split()
-        tag_lst = []
-        for word in txt_list:
-            if word[0] == '@':
-                tag_lst.append(word[1:])
+    def parse_tagging(self, token):
+        tag_lst = [token, token[1:]]
         return tag_lst
 
-    def parse_percentages(self, text):
-        txt_list = text.split()
-        percent_lst = []
-        for i in range(len(txt_list)):
-            print(txt_list[i])
-            if txt_list[i].replace('.', '', 1).isdigit():
-                if txt_list[i + 1] == 'percent' or txt_list[i + 1] == 'percentage':
-                    percent_lst.append(txt_list[i] + '%')
-            elif txt_list[i][-1] == '%' and txt_list[i][:-1].isdigit():
-                percent_lst.append(txt_list[i][:-1] + '%')
+    def parse_percentages(self, token):
 
-        return percent_lst
+        token.replace('%', '', 1)
+        return token + '%'
 
-    def parse_numbers(self, text):
-        txt_list = text.split()
-        numbers_list = []
+
+    def parse_numbers(self, token):
         for i in range(len(txt_list)):
             if txt_list[i].replace(',', '').replace('.', '', 1).isdigit():
                 if '.' in txt_list[i]:
@@ -177,8 +187,8 @@ class Parse:
 
         return numbers_list
 
-    def parse_names_and_entities(self, text):
-        text_list = text.split()
+    def parse_names_and_entities(self, token):
+        token.replace('-', ' ')
         curr_name = ''
         names_list = set()
         i = 0
@@ -186,8 +196,8 @@ class Parse:
             j = 0
             if text_list[i][0].isupper():
                 curr_name = text_list[i]
-                if i != len(text_list)-1:
-                    j = i+1
+                if i != len(text_list) - 1:
+                    j = i + 1
 
                     while j < len(text_list):
                         if text_list[j][0].isupper():
@@ -196,7 +206,7 @@ class Parse:
                         else:
                             names_list.add(curr_name)
                             break
-                    i = j-1
+                    i = j - 1
                 i += 1
 
             else:
@@ -206,7 +216,6 @@ class Parse:
 
         print(names_list)
         return names_list
-
 
 
 # text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
@@ -222,5 +231,3 @@ parse1 = Parse()
 # parse1.parse_precentages(text4)
 # parse1.parse_numbers(text5)
 # parse1.parse_names_and_entities(text6)
-
-
