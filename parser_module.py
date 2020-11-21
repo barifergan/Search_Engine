@@ -25,35 +25,37 @@ class Parse:
         # text_tokens = tweet_tokenizer.tokenize(text)
 
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
-        parsed = False
         i = 0
         while i < len(text_tokens_without_stopwords):
+            parsed = False
             if text_tokens_without_stopwords[i][0] == '#':
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
-                after_parse.append(hashtag)
+                after_parse.extend(hashtag)
                 parsed = True
 
             if text_tokens_without_stopwords[i][0] == '@':
-                tag = self.parse_hashtags(text_tokens_without_stopwords[i])
-                after_parse.append(tag)
+                tag = self.parse_tagging(text_tokens_without_stopwords[i])
+                after_parse.extend(tag)
                 parsed = True
 
             if 'http' in text_tokens_without_stopwords[i]:
-                url = self.parse_url(text_tokens_without_stopwords[i])
-                after_parse.append(url)
+                url = self.parse_url(text_tokens_without_stopwords[i], text_tokens)
+                after_parse.extend(url)
                 parsed = True
 
-            if ('%' in text_tokens_without_stopwords[i]) | (text_tokens_without_stopwords[i + 1] == 'percent') | (
-                    text_tokens_without_stopwords[i + 1] == 'percentage'):
+            last_token = len(text_tokens_without_stopwords) - 2
+            if ('%' in text_tokens_without_stopwords[i]) or ((i < last_token) and (
+                    text_tokens_without_stopwords[i + 1] == 'percent' or text_tokens_without_stopwords[
+                i + 1] == 'percentage')):
                 percentage = self.parse_percentages(text_tokens_without_stopwords[i])
                 after_parse.append(percentage)
                 parsed = True
 
             if text_tokens_without_stopwords[i].replace(',', '').replace('.', '', 1).isdigit():
                 if '.' in text_tokens_without_stopwords[i]:
-                    curr_num = float(number.replace(',', ''))
+                    curr_num = float(text_tokens_without_stopwords[i].replace(',', ''))
                 else:
-                    curr_num = int(number.replace(',', ''))
+                    curr_num = int(text_tokens_without_stopwords[i].replace(',', ''))
 
                 number = self.parse_numbers(curr_num, text_tokens_without_stopwords[i + 1])
                 after_parse.append(number)
@@ -62,12 +64,18 @@ class Parse:
             if text_tokens_without_stopwords[i][0].isupper():
                 tup = self.parse_names_and_entities(text_tokens_without_stopwords[i])
                 after_parse.append(tup[0])
-                i += tup[1]
+                i += tup[1]-1
+                # TODO: check if i grows properly
 
-            if parsed == False:
+            if parsed is False:
                 after_parse.append(text_tokens_without_stopwords[i])
 
+            i += 1
+
         return after_parse
+
+
+
 
     def parse_doc(self, doc_as_list):
         """
@@ -90,7 +98,16 @@ class Parse:
         retweet_quote_url = doc_as_list[12]
         retweet_quote_indices = doc_as_list[13]
         term_dict = {}
-        text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
+        if quote_url is None and quote_text is None:
+            text_to_tokenize = full_text + ' ' + url
+        # if quote_url is None and quote_text is not None:
+        #     text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text
+        #
+        # if quote_url is not None and quote_text is None:
+        #     text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
+        else:
+            text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
+
         tokenized_text = self.parse_sentence(text_to_tokenize)
 
         doc_length = len(tokenized_text)  # after text operations.
@@ -101,10 +118,13 @@ class Parse:
             else:
                 term_dict[term] += 1
 
+        # print(tokenized_text)
+
         document = Document(tweet_id, tweet_date, full_text, url, indices, retweet_text, retweet_url, retweet_indices,
                             quote_text,
                             quote_url, quote_indices, retweet_quote_text, retweet_quote_url, retweet_quote_indices,
                             term_dict, doc_length)
+
         return document
 
     def parse_hashtags(self, token):
@@ -131,20 +151,28 @@ class Parse:
             hashtag_lst.append(hashtag)
         return hashtag_lst
 
-    def parse_url(self, token):
+    def parse_url(self, token, text_tokens):
 
-        url_parts = re.split('://|/|:|=', token)
+        url_parts = re.split('{|}|://|/|:|=|"', token)
 
-        sub_url1 = url_parts[1][0:3]
-        sub_url2 = url_parts[1][4:]
-        url_parts.pop(1)
-        url_parts.insert(1, sub_url1)
-        url_parts.insert(2, sub_url2)
+        # index_of_dot = url_parts[1].find()
+        for i in range(len(url_parts)):
+            if 'www' in url_parts[i]:
+                sub_url1 = url_parts[i][:3]
+                sub_url2 = url_parts[i][4:]
+                url_parts.pop(i)
+                url_parts.insert(i, sub_url1)
+                url_parts.insert(i+1, sub_url2)
+
+        # print("im here:")
+        # for i in url_parts:
+        #     print(i)
 
         for i in range(len(url_parts)):
-            if url_parts[i][0] == '?':
-                word = url_parts[i][1:]
-                url_parts[i] = word
+            if url_parts[i] != '':
+                if url_parts[i][0] == '?':
+                    word = url_parts[i][1:]
+                    url_parts[i] = word
 
         # print(url_parts)
         return url_parts

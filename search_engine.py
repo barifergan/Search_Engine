@@ -1,4 +1,5 @@
 import os
+import time
 
 from reader import ReadFile
 from configuration import ConfigClass
@@ -17,6 +18,7 @@ def run_engine():
     r = ReadFile(corpus_path=config.get__corpusPath())
     p = Parse()
     indexer = Indexer(config)
+    all_parsed_dict = {}
 
     corpus_path = config.get__corpusPath()
     parsed_documents = []
@@ -29,14 +31,19 @@ def run_engine():
                 for idx, document in enumerate(documents_list):
                     # parse the document
                     parsed_document = p.parse_doc(document)
+                    for term in parsed_document.term_doc_dictionary:
+                        if term not in all_parsed_dict.keys():
+                            all_parsed_dict[term] = 1
+                        else:
+                            all_parsed_dict[term] += 1
                     parsed_documents.append(parsed_document)
 
         # index the document data
-        indexer.add_new_doc(parsed_document)
+        # indexer.add_new_doc(parsed_document)
     print('Finished parsing and indexing. Starting to export files')
 
-    utils.save_obj(indexer.inverted_idx, "inverted_idx")
-    utils.save_obj(indexer.postingDict, "posting")
+    # utils.save_obj(indexer.inverted_idx, "inverted_idx")
+    # utils.save_obj(indexer.postingDict, "posting")
 
 
 def load_index():
@@ -55,9 +62,15 @@ def search_and_rank_query(query, inverted_index, k):
 
 
 def main():
+    start_time = time.time()
+
     run_engine()
-    query = input("Please enter a query: ")
-    k = int(input("Please enter number of docs to retrieve: "))
-    inverted_index = load_index()
-    for doc_tuple in search_and_rank_query(query, inverted_index, k):
-        print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+
+    end_time = time.time()
+    print("--- %s seconds ---" % (end_time - start_time))
+
+    # query = input("Please enter a query: ")
+    # k = int(input("Please enter number of docs to retrieve: "))
+    # inverted_index = load_index()
+    # for doc_tuple in search_and_rank_query(query, inverted_index, k):
+    #     print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
