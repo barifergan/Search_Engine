@@ -26,8 +26,8 @@ class Parse:
 
         text_tokens_without_stopwords = [w.lower() for w in text_tokens if w not in self.stop_words]
         parsed = False
-
-        for i in range(len(text_tokens_without_stopwords)):
+        i = 0
+        while i < len(text_tokens_without_stopwords):
             if text_tokens_without_stopwords[i][0] == '#':
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
                 after_parse.append(hashtag)
@@ -49,10 +49,20 @@ class Parse:
                 after_parse.append(percentage)
                 parsed = True
 
-            if text_tokens_without_stopwords[i].isdigit():
-                number = self.parse_numbers(text_tokens_without_stopwords[i])
+            if text_tokens_without_stopwords[i].replace(',', '').replace('.', '', 1).isdigit():
+                if '.' in text_tokens_without_stopwords[i]:
+                    curr_num = float(number.replace(',', ''))
+                else:
+                    curr_num = int(number.replace(',', ''))
+
+                number = self.parse_numbers(curr_num, text_tokens_without_stopwords[i + 1])
                 after_parse.append(number)
                 parsed = True
+
+            if text_tokens_without_stopwords[i][0].isupper():
+                tup = self.parse_names_and_entities(text_tokens_without_stopwords[i])
+                after_parse.append(tup[0])
+                i += tup[1]
 
             if parsed == False:
                 after_parse.append(text_tokens_without_stopwords[i])
@@ -148,74 +158,44 @@ class Parse:
         token.replace('%', '', 1)
         return token + '%'
 
+    def parse_numbers(self, number, str_to_check):
 
-    def parse_numbers(self, token):
-        for i in range(len(txt_list)):
-            if txt_list[i].replace(',', '').replace('.', '', 1).isdigit():
-                if '.' in txt_list[i]:
-                    curr_num = float(txt_list[i].replace(',', ''))
-                else:
-                    curr_num = int(txt_list[i].replace(',', ''))
-
-                if curr_num < 1000:
-                    if txt_list[i + 1] == "Thousand":
-                        numbers_list.append(str(curr_num) + 'K')
-                    elif txt_list[i + 1] == "Million":
-                        numbers_list.append(str(curr_num) + 'M')
-                    elif txt_list[i + 1] == "Billion":
-                        numbers_list.append(str(curr_num) + 'B')
-                    elif (txt_list[i].replace('/', '').isdigit()) & ('/' in txt_list[i + 1]):
-                        numbers_list.append(str(curr_num) + " " + txt_list[i + 1])
-                    else:
-                        numbers_list.append(str(curr_num))
-
-                elif 1000 <= curr_num < 1000000:
-                    if txt_list[i + 1] == "Million":
-                        curr_num = math.floor((curr_num / 1000) * 10 ** 3) / 10 ** 3
-                        numbers_list.append(str(curr_num) + 'B')
-                    else:
-                        curr_num = math.floor((curr_num / 1000) * 10 ** 3) / 10 ** 3
-                        numbers_list.append(str(curr_num) + 'K')
-                elif 1000000 <= curr_num < 1000000000:
-                    curr_num = math.floor((curr_num / 1000000) * 10 ** 3) / 10 ** 3
-                    numbers_list.append(str(curr_num) + 'M')
-                elif curr_num >= 1000000000:
-                    curr_num = math.floor((curr_num / 1000000000) * 10 ** 3) / 10 ** 3
-                    numbers_list.append(str(curr_num) + 'B')
-        # print(txt_list)
-        # print(numbers_list)
-
-        return numbers_list
-
-    def parse_names_and_entities(self, token):
-        token.replace('-', ' ')
-        curr_name = ''
-        names_list = set()
-        i = 0
-        while i < len(text_list):
-            j = 0
-            if text_list[i][0].isupper():
-                curr_name = text_list[i]
-                if i != len(text_list) - 1:
-                    j = i + 1
-
-                    while j < len(text_list):
-                        if text_list[j][0].isupper():
-                            curr_name += " " + text_list[j]
-                            j += 1
-                        else:
-                            names_list.add(curr_name)
-                            break
-                    i = j - 1
-                i += 1
-
+        if number < 1000:
+            if str_to_check == "Thousand":
+                return str(number) + 'K'
+            elif str_to_check == "Million":
+                return str(number) + 'M'
+            elif str_to_check == "Billion":
+                return str(number) + 'B'
+            elif (str_to_check.replace('/', '').isdigit()) & ('/' in str_to_check):
+                return str(number) + " " + str_to_check
             else:
-                i += 1
+                return str(number)
 
-        names_list.add(curr_name)
+        elif 1000 <= number < 1000000:
+            if str_to_check == "Million":
+                curr_num = math.floor((number / 1000) * 10 ** 3) / 10 ** 3
+                return str(curr_num) + 'B'
+            else:
+                curr_num = math.floor((number / 1000) * 10 ** 3) / 10 ** 3
+                return str(curr_num) + 'K'
+        elif 1000000 <= number < 1000000000:
+            curr_num = math.floor((number / 1000000) * 10 ** 3) / 10 ** 3
+            return str(curr_num) + 'M'
+        elif number >= 1000000000:
+            curr_num = math.floor((number / 1000000000) * 10 ** 3) / 10 ** 3
+            return str(curr_num) + 'B'
 
-        print(names_list)
-        return names_list
+        return
+
+    def parse_names_and_entities(self, text):
+        text.replace('-', ' ')
+        curr_name = ''
+        for i in range(len(text)):
+            if text[i][0].isupper():
+                curr_name += text[i]
+            else:
+                return curr_name, i
 
 
 # text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
