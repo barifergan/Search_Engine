@@ -49,9 +49,8 @@ class Parse:
                 parsed = True
             # percent
             last_token = len(text_tokens_without_stopwords) - 2
-            if ('%' in text_tokens_without_stopwords[i]) or ((i < last_token) and (
-                    text_tokens_without_stopwords[i + 1] == 'percent' or text_tokens_without_stopwords[
-                i + 1] == 'percentage')):
+            if (i < last_token) and (text_tokens_without_stopwords[i + 1] == 'percent' or text_tokens_without_stopwords[
+                i + 1] == 'percentage') or text_tokens_without_stopwords[i + 1] == '%':
                 percentage = self.parse_percentages(text_tokens_without_stopwords[i])
                 after_parse.append(percentage)
                 parsed = True
