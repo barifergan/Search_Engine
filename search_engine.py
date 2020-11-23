@@ -69,8 +69,8 @@ def main():
     end_time = time.time()
     print("--- %s seconds ---" % (end_time - start_time))
 
-    # query = input("Please enter a query: ")
-    # k = int(input("Please enter number of docs to retrieve: "))
-    # inverted_index = load_index()
-    # for doc_tuple in search_and_rank_query(query, inverted_index, k):
-    #     print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+    query = input("Please enter a query: ")
+    k = int(input("Please enter number of docs to retrieve: "))
+    inverted_index = load_index()
+    for doc_tuple in search_and_rank_query(query, inverted_index, k):
+        print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
