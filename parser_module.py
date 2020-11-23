@@ -25,7 +25,7 @@ class Parse:
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
 
         text_tokens_without_stopwords = [w for w in text_tokens if w.lower() not in self.stop_words]
-        symbols_to_remove = '.,:;{}"?!&'
+        symbols_to_remove = '.,:;{}"?!&-'
         i = 0
         while i < len(text_tokens_without_stopwords):
             parsed = False
@@ -245,12 +245,12 @@ class Parse:
 # text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
 # text3 = 'this is @Ronen and @Bar'
 # text4 = '6% 106 percent 10.6 percentage'
-# text5 = '1000 Million 204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
+# # text5 = '1000 Million 204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
 # text6 = 'Alexandria Ocasio-Cortez is Doctor Cortez'
 # parse1 = Parse()
-# # parse1.parse_hashtags(text1)
-# parse1.parse_url(text2)
-# parse1.parse_tagging(text3)
-# parse1.parse_precentages(text4)
-# parse1.parse_numbers(text5)
+# # # parse1.parse_hashtags(text1)
+# # parse1.parse_url(text2)
+# # parse1.parse_tagging(text3)
+# # parse1.parse_precentages(text4)
+# # parse1.parse_numbers(text5)
 # parse1.parse_names_and_entities(text6)
