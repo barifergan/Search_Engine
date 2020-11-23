@@ -30,13 +30,20 @@ def run_engine():
                 documents_list = r.read_file(file_name)
                 for idx, document in enumerate(documents_list):
                     # parse the document
+                    exist_in_doc = False
                     parsed_document = p.parse_doc(document)
-                    for term in parsed_document.term_doc_dictionary:
-                        if term not in all_parsed_dict.keys():
-                            all_parsed_dict[term] = 1
-                        else:
-                            all_parsed_dict[term] += 1
-                    parsed_documents.append(parsed_document)
+                    # for term in parsed_document.term_doc_dictionary:
+                    #     if term[0].isupper():
+                    #         if term not in all_parsed_dict.keys():
+                    #             all_parsed_dict[term] = 1
+                    #             exist_in_doc = True
+                    #
+                    #         elif exist_in_doc is True:
+                    #             continue
+                    #         else:
+                    #             all_parsed_dict[term] += 1
+                    #             exist_in_doc = True
+                    # parsed_documents.append(parsed_document)
 
         # index the document data
         # indexer.add_new_doc(parsed_document)
