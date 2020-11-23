@@ -140,6 +140,8 @@ class Parse:
             hashtag_lst.append('#' + merge_words.lower())
 
         elif any(x.isupper() for x in hashtag):
+            #TODO: handle case of whole word made of upper cases (like SayNoToUCGGuidlines)
+
             condition = False
             for i in range(len(token) - 1):
                 if token[i].isupper() and token[i + 1].isupper():
