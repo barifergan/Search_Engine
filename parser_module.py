@@ -37,7 +37,7 @@ class Parse:
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
                 after_parse.extend(hashtag)
                 parsed = True
-            # taging
+            # tagging
             if text_tokens_without_stopwords[i][0] == '@':
                 tag = self.parse_tagging(text_tokens_without_stopwords[i])
                 after_parse.extend(tag)
@@ -77,9 +77,6 @@ class Parse:
             i += 1
 
         return after_parse
-
-
-
 
     def parse_doc(self, doc_as_list):
         """
@@ -134,25 +131,65 @@ class Parse:
     def parse_hashtags(self, token):
         hashtag_lst = []
         hashtag = token.replace('#', '')
+        # hashtag seperated by '_'
         if hashtag.find('_') != -1:
             hashtag_lst = [s.lower() for s in hashtag.split('_')]
             merge_words = hashtag.replace('_', '')
             hashtag_lst.append('#' + merge_words.lower())
 
         elif any(x.isupper() for x in hashtag):
-            condition = False
-            for i in range(len(token) - 1):
-                if token[i].isupper() and token[i + 1].isupper():
-                    condition = True
-                    break
-            if condition:
-                hashtag_lst = [s.lower() for s in re.findall('|[A-Z]+|[a-z]+|', token)]
+            """
+            This case handles uppercase letters
+            :param two_capital_in_row: helps find amount_of_rows.
+            :param amount_of_rows: indicates if seperation is by uppercase letters ==1: Yes, <1: No.
+            :param low_or_up: resembles hashtag 'u': uppercase, 'l': lowercase.
+            """
+            two_capital_in_row = False
+            amount_of_rows = 0
+            low_or_up = ''
+            for i in range(len(hashtag)):
+                if hashtag[i].isupper():
+                    low_or_up += 'u'
+                    if i+1 < len(hashtag) and hashtag[i+1].isupper():
+                        if not two_capital_in_row:
+                            two_capital_in_row = True
+                            amount_of_rows += 1
+                else:
+                    low_or_up += 'l'
+                    two_capital_in_row = False
+
+            if amount_of_rows > 1:
+                hashtag_lst = [s.lower() for s in re.findall('|[A-Z]+|[a-z]+|', hashtag)]
+                while '' in hashtag_lst: hashtag_lst.remove('')
             else:
-                hashtag_lst = [s.lower() for s in re.findall('|[A-Z]+[a-z]*|[a-z]+|', token)]
-            while '' in hashtag_lst: hashtag_lst.remove('')
-            hashtag_lst.append('#' + hashtag.lower())
+                part_of_hashtag = ''
+                for i in range(len(low_or_up)):
+                    if low_or_up[i] == 'u':
+                        if part_of_hashtag == '':
+                            part_of_hashtag += hashtag[i]
+                        elif part_of_hashtag[-1].islower():
+                            hashtag_lst.append(part_of_hashtag.lower())
+                            part_of_hashtag = hashtag[i]
+                        else:
+                            if i + 1 < len(low_or_up) and low_or_up[i + 1] == 'l':
+                                hashtag_lst.append(part_of_hashtag.lower())
+                                part_of_hashtag = hashtag[i]
+                            elif i + 1 < len(low_or_up) and low_or_up[i + 1] == 'u':
+                                part_of_hashtag += hashtag[i]
+                            else:
+                                # check if last char
+                                part_of_hashtag += hashtag[i]
+                                hashtag_lst.append(part_of_hashtag.lower())
+                    else:
+                        part_of_hashtag += hashtag[i]
+                        # check if last char
+                        if i == len(low_or_up) - 1:
+                            hashtag_lst.append(part_of_hashtag.lower())
+            hashtag_lst.append(token.lower())
+
         else:
             hashtag_lst.append(hashtag)
+            hashtag_lst.append(token)
         return hashtag_lst
 
     def parse_url(self, token, text_tokens):
@@ -240,14 +277,14 @@ class Parse:
                 return names_lst, i
 
 
-# text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
+text1 = '#19'
 # text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
 # text3 = 'this is @Ronen and @Bar'
 # text4 = '6% 106 percent 10.6 percentage'
 # # text5 = '1000 Million 204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
 # text6 = 'Alexandria Ocasio-Cortez is Doctor Cortez'
-# parse1 = Parse()
-# # # parse1.parse_hashtags(text1)
+parse1 = Parse()
+parse1.parse_hashtags(text1)
 # # parse1.parse_url(text2)
 # # parse1.parse_tagging(text3)
 # # parse1.parse_precentages(text4)
