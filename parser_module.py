@@ -23,21 +23,21 @@ class Parse:
 
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
-
-        text_tokens_without_stopwords = [w for w in text_tokens if w.lower() not in self.stop_words]
-        symbols_to_remove = '.,:;{}"?!&-'
+        symbols = '.,:;{}"?!&-'''
+        text_tokens_without_stopwords = [w for w in text_tokens if
+                                         w.lower() not in self.stop_words and w not in symbols]
         i = 0
         while i < len(text_tokens_without_stopwords):
             parsed = False
-            if text_tokens_without_stopwords[i] in symbols_to_remove:
-                i += 1
-                continue
+            # if (text_tokens_without_stopwords[i] in symbols):
+            #     i += 1
+            #     continue
             # hashtag
             if text_tokens_without_stopwords[i][0] == '#':
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
                 after_parse.extend(hashtag)
                 parsed = True
-            # tagging
+            # taging
             if text_tokens_without_stopwords[i][0] == '@':
                 tag = self.parse_tagging(text_tokens_without_stopwords[i])
                 after_parse.extend(tag)
@@ -50,7 +50,7 @@ class Parse:
             # percent
             last_token = len(text_tokens_without_stopwords) - 2
             if (i < last_token) and (text_tokens_without_stopwords[i + 1] == 'percent' or text_tokens_without_stopwords[
-                i + 1] == 'percentage') or text_tokens_without_stopwords[i + 1] == '%':
+                i + 1] == 'percentage' or text_tokens_without_stopwords[i + 1] == '%'):
                 percentage = self.parse_percentages(text_tokens_without_stopwords[i])
                 after_parse.append(percentage)
                 parsed = True
@@ -68,7 +68,7 @@ class Parse:
             if text_tokens_without_stopwords[i][0].isupper():
                 tup = self.parse_names_and_entities(text_tokens_without_stopwords[i:])
                 after_parse.extend(tup[0])
-                i += tup[1]-1
+                i += tup[1] - 1
                 parsed = True
 
             if parsed is False:
@@ -131,7 +131,6 @@ class Parse:
     def parse_hashtags(self, token):
         hashtag_lst = []
         hashtag = token.replace('#', '')
-        # hashtag seperated by '_'
         if hashtag.find('_') != -1:
             hashtag_lst = [s.lower() for s in hashtag.split('_')]
             merge_words = hashtag.replace('_', '')
@@ -189,7 +188,6 @@ class Parse:
 
         else:
             hashtag_lst.append(hashtag)
-            hashtag_lst.append(token)
         return hashtag_lst
 
     def parse_url(self, token, text_tokens):
@@ -201,9 +199,9 @@ class Parse:
             if 'www' in url_parts[i]:
                 sub_url1 = url_parts[i][:3]
                 sub_url2 = url_parts[i][4:]
-                url_parts.pop(i)
+                url_parts.remove(url_parts[i])
                 url_parts.insert(i, sub_url1)
-                url_parts.insert(i+1, sub_url2)
+                url_parts.insert(i + 1, sub_url2)
 
         # print("im here:")
         # for i in url_parts:
@@ -277,14 +275,14 @@ class Parse:
                 return names_lst, i
 
 
-# text1 = '#19'
+# text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
 # text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
 # text3 = 'this is @Ronen and @Bar'
 # text4 = '6% 106 percent 10.6 percentage'
 # # text5 = '1000 Million 204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
 # text6 = 'Alexandria Ocasio-Cortez is Doctor Cortez'
 # parse1 = Parse()
-# parse1.parse_hashtags(text1)
+# # # parse1.parse_hashtags(text1)
 # # parse1.parse_url(text2)
 # # parse1.parse_tagging(text3)
 # # parse1.parse_precentages(text4)
