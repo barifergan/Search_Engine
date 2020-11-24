@@ -44,7 +44,7 @@ class Parse:
                 parsed = True
             # url
             if 'http' in text_tokens_without_stopwords[i]:
-                url = self.parse_url(text_tokens_without_stopwords[i], text_tokens)
+                url = self.parse_url(text_tokens_without_stopwords[i])
                 after_parse.extend(url)
                 parsed = True
             # percent
@@ -61,7 +61,11 @@ class Parse:
                 else:
                     curr_num = int(text_tokens_without_stopwords[i].replace(',', ''))
 
-                number = self.parse_numbers(curr_num, text_tokens_without_stopwords[i + 1])
+                if i == len(text_tokens_without_stopwords)-1: #if this is the last word, send only the current word
+                    number = self.parse_numbers(curr_num, '')
+                else:
+                    number = self.parse_numbers(curr_num, text_tokens_without_stopwords[i + 1])
+
                 after_parse.append(number)
                 parsed = True
             # names and entities
@@ -190,11 +194,12 @@ class Parse:
             hashtag_lst.append(hashtag)
         return hashtag_lst
 
-    def parse_url(self, token, text_tokens):
+    def parse_url(self, token):
 
-        url_parts = re.split('{|}|://|/|:|=|"|":"', token)
+        url_parts = re.split('{|}|://|/|:|=|"', token)
 
         # index_of_dot = url_parts[1].find()
+        while '' in url_parts: url_parts.remove('')
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
                 sub_url1 = url_parts[i][:3]
@@ -273,6 +278,7 @@ class Parse:
                     names_lst.append(curr_name)
             else:
                 return names_lst, i
+        return names_lst, 1
 
 
 # text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'

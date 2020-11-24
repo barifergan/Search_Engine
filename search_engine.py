@@ -34,7 +34,7 @@ def run_engine():
                     parsed_document = p.parse_doc(document)
                     for term in parsed_document.term_doc_dictionary:
 
-                        if term[0].isupper():
+                        if (len(term) > 0) and (term[0].isupper()):
                             if term not in all_parsed_dict.keys():
                                 all_parsed_dict[term] = 1
                                 exist_in_doc = True
