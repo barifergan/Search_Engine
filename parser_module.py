@@ -277,14 +277,14 @@ class Parse:
                 return names_lst, i
 
 
-text1 = '#19'
+# text1 = '#19'
 # text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
 # text3 = 'this is @Ronen and @Bar'
 # text4 = '6% 106 percent 10.6 percentage'
 # # text5 = '1000 Million 204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
 # text6 = 'Alexandria Ocasio-Cortez is Doctor Cortez'
-parse1 = Parse()
-parse1.parse_hashtags(text1)
+# parse1 = Parse()
+# parse1.parse_hashtags(text1)
 # # parse1.parse_url(text2)
 # # parse1.parse_tagging(text3)
 # # parse1.parse_precentages(text4)
