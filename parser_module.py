@@ -24,7 +24,7 @@ class Parse:
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
 
-        symbols = '.,:;{}"?!&-'''
+        symbols = '.,:;{}()[]"?!&-\''
         text_tokens_without_stopwords = [w for w in text_tokens if
                                          w.lower() not in self.stop_words and w not in symbols]
         i = 0
@@ -73,9 +73,9 @@ class Parse:
                 parsed = True
             # names and entities
             if text_tokens_without_stopwords[i][0].isupper():
-                tup = self.parse_names_and_entities(text_tokens_without_stopwords[i:])
-                after_parse.extend(tup[0])
-                i += tup[1] - 1
+                names_and_entities = self.parse_names_and_entities(text_tokens_without_stopwords[i:])
+                after_parse.append(names_and_entities[0])
+                i += names_and_entities[1] - 1
                 parsed = True
 
             if parsed is False:
@@ -196,9 +196,8 @@ class Parse:
     def parse_url(self, token):
 
         url_parts = re.split('{|}|://|/|:|=|"', token)
-
-        # index_of_dot = url_parts[1].find()
         while '' in url_parts: url_parts.remove('')
+
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
                 sub_url1 = url_parts[i][:3]
@@ -260,20 +259,22 @@ class Parse:
 
     # names and entities
     def parse_names_and_entities(self, text):
-        names_lst = []
+        # names_lst = []
         curr_name = ''
         for i in range(len(text)):
             if text[i][0].isupper():
                 if curr_name == '':  # for first word ignore space
                     curr_name += text[i]
-                    names_lst.append(curr_name)
+                    # names_lst.append(curr_name)
                 else:
                     curr_name += ' ' + text[i]
-                    names_lst.append(text[i])
-                    names_lst.append(curr_name)
+                    # names_lst.append(text[i])
+                    # names_lst.append(curr_name)
             else:
-                return names_lst, i
-        return names_lst, 1
+                # return names_lst, i
+                return curr_name, i
+        # return names_lst, 1
+        return curr_name, 1
 
 # text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
 # text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
