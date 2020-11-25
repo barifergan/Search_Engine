@@ -24,7 +24,7 @@ class Parse:
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
 
-        symbols = '.,:;{}()[]"?!&-\''
+        symbols = '.,:;{}()[]"?!&-_\''
         text_tokens_without_stopwords = [w for w in text_tokens if
                                          w.lower() not in self.stop_words and w not in symbols]
         i = 0
@@ -181,15 +181,19 @@ class Parse:
                                 # check if last char
                                 part_of_hashtag += hashtag[i]
                                 hashtag_lst.append(part_of_hashtag.lower())
+
                     else:
                         part_of_hashtag += hashtag[i]
                         # check if last char
                         if i == len(low_or_up) - 1:
                             hashtag_lst.append(part_of_hashtag.lower())
+
             hashtag_lst.append(token.lower())
 
-        else:
+        elif len(hashtag) != 0:
             hashtag_lst.append(hashtag)
+
+        while '' in hashtag_lst: hashtag_lst.remove('')
         return hashtag_lst
 
     # url
@@ -215,7 +219,11 @@ class Parse:
 
     # tagging
     def parse_tagging(self, token):
-        tag_lst = [token, token[1:]]
+        tag_lst = []
+
+        if token[1:] != '':
+            tag_lst = [token, token[1:]] #TODO: decide if we want to save both tokens
+
         return tag_lst
 
     # percent
@@ -274,7 +282,7 @@ class Parse:
                 # return names_lst, i
                 return curr_name, i
         # return names_lst, 1
-        return curr_name, 1
+        return curr_name, len(text)
 
 # text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
 # text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'

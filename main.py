@@ -1,9 +1,11 @@
 import search_engine
 import reader
 import parser_module
+from configuration import ConfigClass
 
 if __name__ == '__main__':
-    search_engine.main()
+    config = ConfigClass()
+    search_engine.main(config.get__corpusPath(), 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\json_files')#, stemming, queries, num_docs_to_retrieve)
 
 
 # def main(corpus_path) :#, output_path, stemming, queries, num_docs_to_retrieve):
@@ -16,4 +18,4 @@ if __name__ == '__main__':
     # document = parse1.parse_doc(sentence)
     # print(document)
 
-path = 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\Data'
+# path = 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\Data'

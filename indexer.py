@@ -1,5 +1,6 @@
 import json
 import collections
+
 from string import ascii_lowercase
 
 
@@ -14,7 +15,7 @@ class Indexer:
             self.file_line_indexes[c] = 0
         self.file_line_indexes['other'] = 0
 
-    def add_new_doc(self, documents, names_dict):
+    def add_new_doc(self, documents, names_dict, output_path, counter_check):
         """
         This function perform indexing process for a document object.
         Saved information is captures via two dictionaries ('inverted index' and 'posting')
@@ -22,6 +23,7 @@ class Indexer:
         :return: -
         """
 
+        doc_num_check = 1
         for d in documents:
             # document_dictionary = document
             document_dictionary = d.term_doc_dictionary
@@ -34,6 +36,7 @@ class Indexer:
             #         self.inverted_idx[term] = 1
 
             # Go over each term in the doc
+            term_num_check = 1
             for term in document_dictionary.keys():
                 try:
                     # Update inverted index and posting
@@ -57,10 +60,14 @@ class Indexer:
                     else:
                         self.inverted_idx[term][0] += 1
 
-                    self.postingDict[term].append((d.tweet_id, document_dictionary[term]))
-
+                    if term in self.postingDict.keys():
+                        self.postingDict[term].append((d.tweet_id, document_dictionary[term]))
+                    term_num_check += 1
                 except:
-                    print('problem with the following key {}'.format(term[0]))
+                    print('problem with the following key {}'.format(term))
+                    print(document_dictionary.keys())
+                    print(counter_check, doc_num_check, term_num_check)
+            doc_num_check += 1
 
 
         # SORT POSTINGDICT!!!!!!!!!!!
@@ -69,36 +76,32 @@ class Indexer:
         curr_char = ''
         i = 0
         while i < len(temp):
-        # for key in temp:
+            # for key in temp:
             if not temp[i][0].isalpha():
-                with open('other.jason', 'w') as outfile:
-                    while not temp[i][0].isalpha():
+                file = output_path + '\other.jason'
+                with open((output_path + '\other.jason'), 'w') as outfile:
+                    while i < len(temp) and not temp[i][0].isalpha():
                         for value in self.postingDict[temp[i]]:
                             json.dump({value[0]: value[1]}, outfile)
                             outfile.write('\n')
                             self.inverted_idx[temp[i]].append(('other.jason', self.file_line_indexes['other']))
                             self.file_line_indexes['other'] += 1
-                            i += 1
+                        i += 1
             else:
                 curr_char = temp[i][0].lower()
-                with open(curr_char + '.jason', 'w') as outfile:
+                with open(output_path + '\\' + curr_char + '.jason', 'w') as outfile:
                     while i < len(temp):
                         if temp[i][0].lower() == curr_char:
                             for value in self.postingDict[temp[i]]:
                                 json.dump({value[0]: value[1]}, outfile)
                                 outfile.write('\n')
-                                self.inverted_idx[temp[i]].append((curr_char + ".jason", self.file_line_indexes[curr_char]))
+                                self.inverted_idx[temp[i]].append(
+                                    (curr_char + ".jason", self.file_line_indexes[curr_char]))
                                 self.file_line_indexes[curr_char] += 1
-                                i += 1
+                            i += 1
                         else:
                             i += 1
                             break
-
-
-
-
-
-
 
 # config = ConfigClass()
 # indexer1 = Indexer(config)

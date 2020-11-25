@@ -9,19 +9,20 @@ from searcher import Searcher
 import utils
 
 
-def run_engine():
+def run_engine(corpus_path, output_path): #, stemming, queries, num_docs_to_retrieve):
     """
 
     :return:
     """
     config = ConfigClass()
-    r = ReadFile(corpus_path=config.get__corpusPath())
+    r = ReadFile(corpus_path)
     p = Parse()
     indexer = Indexer(config)
     names_and_entities = {}
 
     corpus_path = config.get__corpusPath()
     parsed_documents = []
+    counter_check = 1
     for subdir, dirs, files in os.walk(corpus_path):
         for file in files:
             file_type = file[-8:]
@@ -48,7 +49,10 @@ def run_engine():
 
                     parsed_documents.append(parsed_document)
                     if len(parsed_documents) == 10:
-                        indexer.add_new_doc(parsed_documents, names_and_entities)
+
+                        indexer.add_new_doc(parsed_documents, names_and_entities, output_path, counter_check)
+                        counter_check += 1
+                        parsed_documents = []
 
 
     print('Finished parsing and indexing. Starting to export files')
@@ -72,10 +76,11 @@ def search_and_rank_query(query, inverted_index, k):
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
-def main():
+def main(corpus_path, output_path): #, stemming, queries, num_docs_to_retrieve):
+
     start_time = time.time()
 
-    run_engine()
+    run_engine(corpus_path, output_path) #, stemming, queries, num_docs_to_retrieve)
 
     end_time = time.time()
     print("--- %s seconds ---" % (end_time - start_time))
