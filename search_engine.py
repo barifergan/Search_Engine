@@ -32,22 +32,23 @@ def run_engine():
                     # parse the document
                     exist_in_doc = False
                     parsed_document = p.parse_doc(document)
-                    for term in parsed_document.term_doc_dictionary:
+                    # index the document data
+                    indexer.add_new_doc(parsed_document)
+                    # for term in parsed_document.term_doc_dictionary:
+                    #
+                    #     if (len(term) > 0) and (term[0].isupper()):
+                    #         if term not in all_parsed_dict.keys():
+                    #             all_parsed_dict[term] = 1
+                    #             exist_in_doc = True
+                    #
+                    #         elif exist_in_doc is True:
+                    #             continue
+                    #         else:
+                    #             all_parsed_dict[term] += 1
+                    #             exist_in_doc = True
+                    # parsed_documents.append(parsed_document)
 
-                        if (len(term) > 0) and (term[0].isupper()):
-                            if term not in all_parsed_dict.keys():
-                                all_parsed_dict[term] = 1
-                                exist_in_doc = True
 
-                            elif exist_in_doc is True:
-                                continue
-                            else:
-                                all_parsed_dict[term] += 1
-                                exist_in_doc = True
-                    parsed_documents.append(parsed_document)
-
-        # index the document data
-        # indexer.add_new_doc(parsed_document)
     print('Finished parsing and indexing. Starting to export files')
 
     # utils.save_obj(indexer.inverted_idx, "inverted_idx")

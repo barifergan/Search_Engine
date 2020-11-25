@@ -20,33 +20,35 @@ class Parse:
         # space_tokenizer = RegexpTokenizer("\s+", gaps=True)
         # text_tokens = space_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
         after_parse = []
-
+        # tokenizer:
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
+
         symbols = '.,:;{}"?!&-'''
         text_tokens_without_stopwords = [w for w in text_tokens if
                                          w.lower() not in self.stop_words and w not in symbols]
         i = 0
         while i < len(text_tokens_without_stopwords):
-            parsed = False
-            # if (text_tokens_without_stopwords[i] in symbols):
-            #     i += 1
-            #     continue
+            parsed = False  # if parsed according one of the roles
+
             # hashtag
             if text_tokens_without_stopwords[i][0] == '#':
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
                 after_parse.extend(hashtag)
                 parsed = True
-            # taging
+
+            # tagging
             if text_tokens_without_stopwords[i][0] == '@':
                 tag = self.parse_tagging(text_tokens_without_stopwords[i])
                 after_parse.extend(tag)
                 parsed = True
+
             # url
             if 'http' in text_tokens_without_stopwords[i]:
                 url = self.parse_url(text_tokens_without_stopwords[i])
                 after_parse.extend(url)
                 parsed = True
+
             # percent
             last_token = len(text_tokens_without_stopwords) - 2
             if (i < last_token) and (text_tokens_without_stopwords[i + 1] == 'percent' or text_tokens_without_stopwords[
@@ -54,6 +56,7 @@ class Parse:
                 percentage = self.parse_percentages(text_tokens_without_stopwords[i])
                 after_parse.append(percentage)
                 parsed = True
+
             # numbers
             if text_tokens_without_stopwords[i].replace(',', '').replace('.', '', 1).isdigit():
                 if '.' in text_tokens_without_stopwords[i]:
@@ -61,7 +64,7 @@ class Parse:
                 else:
                     curr_num = int(text_tokens_without_stopwords[i].replace(',', ''))
 
-                if i == len(text_tokens_without_stopwords)-1: #if this is the last word, send only the current word
+                if i == len(text_tokens_without_stopwords) - 1:  # if this is the last word, send only the current word
                     number = self.parse_numbers(curr_num, '')
                 else:
                     number = self.parse_numbers(curr_num, text_tokens_without_stopwords[i + 1])
@@ -103,13 +106,9 @@ class Parse:
         retweet_quote_url = doc_as_list[12]
         retweet_quote_indices = doc_as_list[13]
         term_dict = {}
+        # TODO: decide what exactly to enter into the text to parse, so we get the most relevant information
         if quote_url is None and quote_text is None:
             text_to_tokenize = full_text + ' ' + url
-        # if quote_url is None and quote_text is not None:
-        #     text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text
-        #
-        # if quote_url is not None and quote_text is None:
-        #     text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
         else:
             text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
 
@@ -117,13 +116,11 @@ class Parse:
 
         doc_length = len(tokenized_text)  # after text operations.
 
-        for term in tokenized_text:
+        for term in tokenized_text:  # dict of all parsed tokens
             if term not in term_dict.keys():
                 term_dict[term] = 1
             else:
                 term_dict[term] += 1
-
-        # print(tokenized_text)
 
         document = Document(tweet_id, tweet_date, full_text, url, indices, retweet_text, retweet_url, retweet_indices,
                             quote_text,
@@ -132,6 +129,7 @@ class Parse:
 
         return document
 
+    # hashtags
     def parse_hashtags(self, token):
         hashtag_lst = []
         hashtag = token.replace('#', '')
@@ -153,7 +151,7 @@ class Parse:
             for i in range(len(hashtag)):
                 if hashtag[i].isupper():
                     low_or_up += 'u'
-                    if i+1 < len(hashtag) and hashtag[i+1].isupper():
+                    if i + 1 < len(hashtag) and hashtag[i + 1].isupper():
                         if not two_capital_in_row:
                             two_capital_in_row = True
                             amount_of_rows += 1
@@ -194,6 +192,7 @@ class Parse:
             hashtag_lst.append(hashtag)
         return hashtag_lst
 
+    # url
     def parse_url(self, token):
 
         url_parts = re.split('{|}|://|/|:|=|"', token)
@@ -208,44 +207,41 @@ class Parse:
                 url_parts.insert(i, sub_url1)
                 url_parts.insert(i + 1, sub_url2)
 
-        # print("im here:")
-        # for i in url_parts:
-        #     print(i)
-
         for i in range(len(url_parts)):
             if url_parts[i] != '':
                 if url_parts[i][0] == '?':
                     word = url_parts[i][1:]
                     url_parts[i] = word
-
-        # print(url_parts)
         return url_parts
 
+    # tagging
     def parse_tagging(self, token):
         tag_lst = [token, token[1:]]
         return tag_lst
 
+    # percent
     def parse_percentages(self, token):
 
         token.replace('%', '', 1)
         return token + '%'
 
-    def parse_numbers(self, number, str_to_check):
+    # numbers
+    def parse_numbers(self, number, next_word):
         num = ''
         if number < 1000:
-            if str_to_check == "Thousand" or str_to_check == "thousand":
+            if next_word == "Thousand" or next_word == "thousand":
                 num = str(number) + 'K'
-            elif str_to_check == "Million" or str_to_check == "million":
+            elif next_word == "Million" or next_word == "million":
                 num = str(number) + 'M'
-            elif str_to_check == "Billion" or str_to_check == "billion":
+            elif next_word == "Billion" or next_word == "billion":
                 num = str(number) + 'B'
-            elif (str_to_check.replace('/', '').isdigit()) & ('/' in str_to_check):
-                num = str(number) + " " + str_to_check
+            elif (next_word.replace('/', '').isdigit()) & ('/' in next_word):
+                num = str(number) + " " + next_word
             else:
                 num = str(number)
 
         elif 1000 <= number < 1000000:
-            if str_to_check == "Million":
+            if next_word == "Million":
                 curr_num = math.floor((number / 1000) * 10 ** 3) / 10 ** 3
                 num = str(curr_num) + 'B'
             else:
@@ -258,18 +254,17 @@ class Parse:
             curr_num = math.floor((number / 1000000000) * 10 ** 3) / 10 ** 3
             num = str(curr_num) + 'B'
 
-        if num[-3:-1] == '.0':
+        if num[-3:-1] == '.0':  # reformat number
             num = num[0:-3] + num[-1]
         return num
 
+    # names and entities
     def parse_names_and_entities(self, text):
-        # text.replace('-', ' ')
         names_lst = []
         curr_name = ''
         for i in range(len(text)):
             if text[i][0].isupper():
-                # for first word ignore space
-                if curr_name == '':
+                if curr_name == '':  # for first word ignore space
                     curr_name += text[i]
                     names_lst.append(curr_name)
                 else:
@@ -279,7 +274,6 @@ class Parse:
             else:
                 return names_lst, i
         return names_lst, 1
-
 
 # text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
 # text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
