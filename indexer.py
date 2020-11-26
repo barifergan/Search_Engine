@@ -10,6 +10,7 @@ class Indexer:
         self.inverted_idx = {}
         self.postingDict = {}
         self.config = config
+        self.waiting_list = {}
         self.file_line_indexes = {}
         for c in ascii_lowercase:
             self.file_line_indexes[c] = 0
@@ -40,28 +41,53 @@ class Indexer:
             for term in document_dictionary.keys():
                 try:
                     # Update inverted index and posting
-                    if term not in self.inverted_idx.keys():
-                        if term[0].isupper():
-                            # entity
-                            if ' ' in term:
-                                if term in names_dict and names_dict[term] > 1:
-                                    # TODO if to save parts of the entity
-                                    self.inverted_idx[term] = [1]
-                                    self.postingDict[term] = []
-                            # regular word
+                    # if term not in self.inverted_idx.keys():
+                        # first char is uppercase
+                    temp_term = ''
+                    if term[0].isupper():
+                        # entity
+                        if term in names_dict:
+                            if names_dict[term] > 1:
+                                if term not in self.inverted_idx.keys():
+                                    temp_term = term
+                                    self.inverted_idx[temp_term] = [1]
+                                    self.postingDict[temp_term] = []
+                                else:
+                                    temp_term = term
+                                    self.inverted_idx[temp_term][0] += 1
                             else:
-                                # TODO decide if we save lower or upper case
-                                self.inverted_idx[term] = [1]
-                                self.postingDict[term] = []
+                                self.waiting_list[term] = (d.tweet_id, document_dictionary[term])
+
+                        # regular word
+                        elif term.lower() in self.inverted_idx.keys():
+                            temp_term = term.lower()
+                            self.inverted_idx[temp_term][0] += 1
+                        elif term.upper() in self.inverted_idx.keys():
+                            temp_term = term.upper()
+                            self.inverted_idx[temp_term][0] += 1
                         else:
-                            self.inverted_idx[term] = [1]
-                            self.postingDict[term] = []
-
+                            temp_term = term.upper()
+                            self.inverted_idx[temp_term] = [1]
+                            self.postingDict[temp_term] = []
+                    # first char is lowercase
                     else:
-                        self.inverted_idx[term][0] += 1
+                        if term.lower() in self.inverted_idx.keys():
+                            temp_term = term.lower()
+                            self.inverted_idx[temp_term][0] += 1
+                        elif term.upper() in self.inverted_idx.keys():
+                            temp_term = term.lower()
+                            self.inverted_idx[temp_term] = self.inverted_idx[term.upper()]
+                            del(self.inverted_idx[term.upper()])
+                        else:
+                            temp_term = term.lower()
+                            self.inverted_idx[temp_term] = [1]
+                            self.postingDict[temp_term] = []
 
-                    if term in self.postingDict.keys():
-                        self.postingDict[term].append((d.tweet_id, document_dictionary[term]))
+                    # else:
+                    #     self.inverted_idx[term][0] += 1
+
+                    if temp_term in self.postingDict.keys():
+                        self.postingDict[temp_term].append((d.tweet_id, document_dictionary[term]))
                     term_num_check += 1
                 except:
                     print('problem with the following key {}'.format(term))
@@ -69,6 +95,15 @@ class Indexer:
                     print(counter_check, doc_num_check, term_num_check)
             doc_num_check += 1
 
+        to_remove_from_waiting_list = []
+        for waiting_term in self.waiting_list.keys():
+            if names_dict[waiting_term] > 1:
+                self.inverted_idx[waiting_term][0] += 1
+                self.postingDict[waiting_term].append(self.waiting_list[waiting_term])
+                to_remove_from_waiting_list.append(waiting_term)
+
+        for l in to_remove_from_waiting_list:
+            del(self.waiting_list[l])
 
         # SORT POSTINGDICT!!!!!!!!!!!
         temp = sorted(self.postingDict.keys(), key=lambda x: x.lower())
@@ -95,13 +130,21 @@ class Indexer:
                             for value in self.postingDict[temp[i]]:
                                 json.dump({value[0]: value[1]}, outfile)
                                 outfile.write('\n')
-                                self.inverted_idx[temp[i]].append(
-                                    (curr_char + ".jason", self.file_line_indexes[curr_char]))
+                                to_add = ''
+                                if temp[i].lower() in self.inverted_idx.keys():
+                                    to_add = temp[i].lower()
+                                elif temp[i].upper() in self.inverted_idx.keys():
+                                    to_add = temp[i].upper()
+                                else:
+                                    to_add = temp[i]
+                                self.inverted_idx[to_add].append((curr_char + ".jason", self.file_line_indexes[curr_char]))
                                 self.file_line_indexes[curr_char] += 1
                             i += 1
                         else:
                             i += 1
                             break
+
+
 
 # config = ConfigClass()
 # indexer1 = Indexer(config)

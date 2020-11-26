@@ -199,7 +199,7 @@ class Parse:
     # url
     def parse_url(self, token):
 
-        url_parts = re.split('{|}|://|/|:|=|"', token)
+        url_parts = re.split('{|}|://|/|:|=|"|-', token)
         while '' in url_parts: url_parts.remove('')
 
         for i in range(len(url_parts)):

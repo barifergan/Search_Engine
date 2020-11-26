@@ -36,7 +36,7 @@ def run_engine(corpus_path, output_path): #, stemming, queries, num_docs_to_retr
                     # index the document data
                     for term in parsed_document.term_doc_dictionary:
 
-                        if (len(term) > 0) and (term[0].isupper()):
+                        if (len(term) > 0) and (term[0].isupper()) and ' ' in term:
                             if term not in names_and_entities.keys():
                                 names_and_entities[term] = 1
                                 exist_in_doc = True
@@ -48,7 +48,7 @@ def run_engine(corpus_path, output_path): #, stemming, queries, num_docs_to_retr
                                 exist_in_doc = True
 
                     parsed_documents.append(parsed_document)
-                    if len(parsed_documents) == 10:
+                    if len(parsed_documents) == 50000:
 
                         indexer.add_new_doc(parsed_documents, names_and_entities, output_path, counter_check)
                         counter_check += 1
