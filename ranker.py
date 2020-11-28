@@ -1,6 +1,12 @@
 class Ranker:
-    def __init__(self):
+    def __init__(self, inverted_index):
         pass
+        # for term_i in inverted_index:
+        #     f_i_k = inverted_index[term_i][1] # value of word i in posting file
+        #
+        #     for j in inverted_index:
+        #         f_j_k = #value of word j in posting file
+
 
     @staticmethod
     def rank_relevant_doc(relevant_doc):

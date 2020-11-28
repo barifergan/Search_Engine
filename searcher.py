@@ -10,7 +10,7 @@ class Searcher:
         :param inverted_index: dictionary of inverted index
         """
         self.parser = Parse()
-        self.ranker = Ranker()
+        self.ranker = Ranker(inverted_index)
         self.inverted_index = inverted_index
 
     def relevant_docs_from_posting(self, query):

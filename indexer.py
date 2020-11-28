@@ -25,6 +25,7 @@ class Indexer:
         """
 
         doc_num_check = 1
+        self.postingDict = {}
         for d in documents:
             # document_dictionary = document
             document_dictionary = d.term_doc_dictionary
@@ -42,7 +43,7 @@ class Indexer:
                 try:
                     # Update inverted index and posting
                     # if term not in self.inverted_idx.keys():
-                        # first char is uppercase
+                    # first char is uppercase
                     temp_term = ''
                     if term[0].isupper():
                         # entity
@@ -54,8 +55,9 @@ class Indexer:
                                     self.postingDict[temp_term] = []
                                     if temp_term in self.waiting_list.keys():
                                         self.inverted_idx[temp_term][0] += 1
-                                        self.postingDict[temp_term].append((self.waiting_list[temp_term][0], self.waiting_list[temp_term][1]))
-                                        del(self.waiting_list[temp_term])
+                                        self.postingDict[temp_term].append(
+                                            (self.waiting_list[temp_term][0], self.waiting_list[temp_term][1]))
+                                        del (self.waiting_list[temp_term])
                                 else:
                                     temp_term = term
                                     self.inverted_idx[temp_term][0] += 1
@@ -73,6 +75,16 @@ class Indexer:
                             temp_term = term.upper()
                             self.inverted_idx[temp_term] = [1]
                             self.postingDict[temp_term] = []
+
+                    elif term[0].isdigit():
+                        if term not in self.inverted_idx.keys():
+                            temp_term = term.upper()
+                            self.inverted_idx[temp_term] = [1]
+                            self.postingDict[temp_term] = []
+                        else:
+                            temp_term = term.upper()
+                            self.inverted_idx[temp_term][0] += 1
+
                     # first char is lowercase
                     else:
                         if term.lower() in self.inverted_idx.keys():
@@ -81,18 +93,16 @@ class Indexer:
                         elif term.upper() in self.inverted_idx.keys():
                             temp_term = term.lower()
                             self.inverted_idx[temp_term] = self.inverted_idx[term.upper()]
-                            del(self.inverted_idx[term.upper()])
+                            del (self.inverted_idx[term.upper()])
                         else:
                             temp_term = term.lower()
                             self.inverted_idx[temp_term] = [1]
                             self.postingDict[temp_term] = []
 
-                    # else:
-                    #     self.inverted_idx[term][0] += 1
-
                     if temp_term in self.postingDict.keys():
                         self.postingDict[temp_term].append((d.tweet_id, document_dictionary[term]))
                     term_num_check += 1
+
                 except:
                     print('problem with the following key {}'.format(term))
                     print(document_dictionary.keys())
@@ -108,7 +118,6 @@ class Indexer:
         #
         # for l in to_remove_from_waiting_list:
         #     del(self.waiting_list[l])
-
 
         temp = sorted(self.postingDict.keys(), key=lambda x: x.lower())
 
@@ -141,7 +150,8 @@ class Indexer:
                                     to_add = temp[i].upper()
                                 else:
                                     to_add = temp[i]
-                                self.inverted_idx[to_add].append((curr_char + ".jason", self.file_line_indexes[curr_char]))
+                                self.inverted_idx[to_add].append(
+                                    (curr_char + ".jason", self.file_line_indexes[curr_char]))
                                 self.file_line_indexes[curr_char] += 1
                             i += 1
                         else:
@@ -149,9 +159,6 @@ class Indexer:
                             break
 
         # restart posting dict
-        self.postingDict = {}
-
-
 
 # config = ConfigClass()
 # indexer1 = Indexer(config)

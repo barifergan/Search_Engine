@@ -71,6 +71,7 @@ class Parse:
 
                 after_parse.append(number)
                 parsed = True
+
             # names and entities
             if text_tokens_without_stopwords[i][0].isupper():
                 names_and_entities = self.parse_names_and_entities(text_tokens_without_stopwords[i:])
@@ -78,7 +79,7 @@ class Parse:
                 i += names_and_entities[1] - 1
                 parsed = True
 
-            if parsed is False:
+            if parsed is False :
                 after_parse.append(text_tokens_without_stopwords[i])
 
             i += 1
@@ -107,12 +108,22 @@ class Parse:
         retweet_quote_indices = doc_as_list[13]
         term_dict = {}
         # TODO: decide what exactly to enter into the text to parse, so we get the most relevant information
-        if quote_url is None and quote_text is None:
-            text_to_tokenize = full_text + ' ' + url
-        else:
-            text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
+        # if quote_url is None and quote_text is None:
+        #     text_to_tokenize = full_text + ' ' + url
+        # else:
+        #     text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
 
-        tokenized_text = self.parse_sentence(text_to_tokenize)
+        text_to_tokenize = full_text
+        tokenized_full_text = self.parse_sentence(text_to_tokenize)
+
+        if quote_url is None and quote_text is None:
+            text_to_tokenize = url
+        else:
+            text_to_tokenize = url + ' ' + ' ' + quote_text + ' ' + quote_url
+
+        tokenized_rest = self.parse_sentence(text_to_tokenize)
+
+        tokenized_text = tokenized_full_text + tokenized_rest
 
         doc_length = len(tokenized_text)  # after text operations.
 
@@ -214,6 +225,7 @@ class Parse:
                 if url_parts[i][0] == '?':
                     word = url_parts[i][1:]
                     url_parts[i] = word
+
         while '' in url_parts: url_parts.remove('')
         return url_parts
 
