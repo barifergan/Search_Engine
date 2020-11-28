@@ -200,7 +200,6 @@ class Parse:
     def parse_url(self, token):
 
         url_parts = re.split('{|}|://|/|:|=|"|-', token)
-        while '' in url_parts: url_parts.remove('')
 
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
@@ -215,6 +214,7 @@ class Parse:
                 if url_parts[i][0] == '?':
                     word = url_parts[i][1:]
                     url_parts[i] = word
+        while '' in url_parts: url_parts.remove('')
         return url_parts
 
     # tagging

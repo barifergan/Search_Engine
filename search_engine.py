@@ -48,9 +48,10 @@ def run_engine(corpus_path, output_path): #, stemming, queries, num_docs_to_retr
                                 exist_in_doc = True
 
                     parsed_documents.append(parsed_document)
-                    if len(parsed_documents) == 50000:
+                    if len(parsed_documents) == 100000:
 
                         indexer.add_new_doc(parsed_documents, names_and_entities, output_path, counter_check)
+                        print('Parsed and indexed ' + str(counter_check*100000) + ' files')
                         counter_check += 1
                         parsed_documents = []
 

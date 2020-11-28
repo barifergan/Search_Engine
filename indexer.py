@@ -52,6 +52,10 @@ class Indexer:
                                     temp_term = term
                                     self.inverted_idx[temp_term] = [1]
                                     self.postingDict[temp_term] = []
+                                    if temp_term in self.waiting_list.keys():
+                                        self.inverted_idx[temp_term][0] += 1
+                                        self.postingDict[temp_term].append((self.waiting_list[temp_term][0], self.waiting_list[temp_term][1]))
+                                        del(self.waiting_list[temp_term])
                                 else:
                                     temp_term = term
                                     self.inverted_idx[temp_term][0] += 1
@@ -95,17 +99,17 @@ class Indexer:
                     print(counter_check, doc_num_check, term_num_check)
             doc_num_check += 1
 
-        to_remove_from_waiting_list = []
-        for waiting_term in self.waiting_list.keys():
-            if names_dict[waiting_term] > 1:
-                self.inverted_idx[waiting_term][0] += 1
-                self.postingDict[waiting_term].append(self.waiting_list[waiting_term])
-                to_remove_from_waiting_list.append(waiting_term)
+        # to_remove_from_waiting_list = []
+        # for waiting_term in self.waiting_list.keys():
+        #     if names_dict[waiting_term] > 1:
+        #         self.inverted_idx[waiting_term][0] += 1
+        #         self.postingDict[waiting_term].append(self.waiting_list[waiting_term])
+        #         to_remove_from_waiting_list.append(waiting_term)
+        #
+        # for l in to_remove_from_waiting_list:
+        #     del(self.waiting_list[l])
 
-        for l in to_remove_from_waiting_list:
-            del(self.waiting_list[l])
 
-        # SORT POSTINGDICT!!!!!!!!!!!
         temp = sorted(self.postingDict.keys(), key=lambda x: x.lower())
 
         curr_char = ''
@@ -143,6 +147,9 @@ class Indexer:
                         else:
                             i += 1
                             break
+
+        # restart posting dict
+        self.postingDict = {}
 
 
 
