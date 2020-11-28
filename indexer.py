@@ -12,6 +12,7 @@ class Indexer:
         self.config = config
         self.waiting_list = {}
         self.file_line_indexes = {}
+        self.docs_dict = {}
         for c in ascii_lowercase:
             self.file_line_indexes[c] = 0
         self.file_line_indexes['other'] = 0
@@ -26,25 +27,19 @@ class Indexer:
 
         doc_num_check = 1
         self.postingDict = {}
+        self.docs_dict = {}
         for d in documents:
-            # document_dictionary = document
+            to_associations_matrix = {}
+            count_unique_words = 0
             document_dictionary = d.term_doc_dictionary
-            # for term in document_dictionary.keys():
-            #     posting_dict = {document.tweet_id: document_dictionary[term]}
-            #     with open(term[0].lower() + ".jason", "w") as outfile:
-            #         json.dump(posting_dict, outfile)
-            #
-            #     if term not in self.inverted_idx.keys():
-            #         self.inverted_idx[term] = 1
-
             # Go over each term in the doc
             term_num_check = 1
             for term in document_dictionary.keys():
-                try:
-                    # Update inverted index and posting
-                    # if term not in self.inverted_idx.keys():
+                try:    # Update inverted index and posting
                     # first char is uppercase
                     temp_term = ''
+                    if document_dictionary[term] == 1:  # save the amount of unique words in document
+                        count_unique_words += 1
                     if term[0].isupper():
                         # entity
                         if term in names_dict:
@@ -103,11 +98,17 @@ class Indexer:
                         self.postingDict[temp_term].append((d.tweet_id, document_dictionary[term]))
                     term_num_check += 1
 
+                    to_associations_matrix[temp_term] = document_dictionary[term]
+
                 except:
                     print('problem with the following key {}'.format(term))
                     print(document_dictionary.keys())
                     print(counter_check, doc_num_check, term_num_check)
             doc_num_check += 1
+
+            self.docs_dict[d.tweet_id] = (document_dictionary[max(document_dictionary, key=document_dictionary.get)], count_unique_words)
+
+
 
         # to_remove_from_waiting_list = []
         # for waiting_term in self.waiting_list.keys():

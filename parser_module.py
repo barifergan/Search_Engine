@@ -79,7 +79,7 @@ class Parse:
                 i += names_and_entities[1] - 1
                 parsed = True
 
-            if parsed is False :
+            if parsed is False or text_tokens_without_stopwords[i].isupper():
                 after_parse.append(text_tokens_without_stopwords[i])
 
             i += 1
@@ -210,7 +210,7 @@ class Parse:
     # url
     def parse_url(self, token):
 
-        url_parts = re.split('{|}|://|/|:|=|"|-', token)
+        url_parts = re.split('{|}|://|/|:|=|"|-|[?]|#', token)
 
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
@@ -220,11 +220,11 @@ class Parse:
                 url_parts.insert(i, sub_url1)
                 url_parts.insert(i + 1, sub_url2)
 
-        for i in range(len(url_parts)):
-            if url_parts[i] != '':
-                if url_parts[i][0] == '?':
-                    word = url_parts[i][1:]
-                    url_parts[i] = word
+        # for i in range(len(url_parts)):
+        #     if url_parts[i] != '':
+                # if url_parts[i][0] == '?':
+                #     word = url_parts[i][1:]
+                #     url_parts[i] = word
 
         while '' in url_parts: url_parts.remove('')
         return url_parts
