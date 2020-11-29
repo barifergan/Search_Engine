@@ -11,6 +11,83 @@ class Parse:
     def __init__(self):
         self.stop_words = stopwords.words('english')
 
+    def parse_doc(self, doc_as_list):
+        """
+        This function takes a tweet document as list and break it into different fields
+        :param doc_as_list: list re-preseting the tweet.
+        :return: Document object with corresponding fields.
+        """
+        tweet_id = doc_as_list[0]
+        tweet_date = doc_as_list[1]
+        full_text = doc_as_list[2]
+        url = doc_as_list[3]
+        indices = doc_as_list[4]
+        retweet_text = doc_as_list[5]
+        retweet_url = doc_as_list[6]
+        retweet_indices = doc_as_list[7]
+        quote_text = doc_as_list[8]
+        quote_url = doc_as_list[9]
+        quote_indices = doc_as_list[10]
+        retweet_quote_text = doc_as_list[11]
+        retweet_quote_url = doc_as_list[12]
+        retweet_quote_indices = doc_as_list[13]
+        term_dict = {}
+        # TODO: decide what exactly to enter into the text to parse, so we get the most relevant information
+        # if quote_url is None and quote_text is None:
+        #     text_to_tokenize = full_text + ' ' + url
+        # else:
+        #     text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
+
+        # url to parse:
+        if url == '{}' or url is None:
+            if retweet_url == '{}' or retweet_url is None:
+                if quote_url is None:
+                    if retweet_quote_url is None:
+                        url_to_token = full_text[full_text.find('http'):]
+                    else:
+                        url_to_token = retweet_quote_url[retweet_quote_url.find('":"') + 3:]
+                else:
+                    url_to_token = quote_url[quote_url.find('":"') + 3:]
+            elif quote_url is not None:
+                url_to_token = retweet_url[retweet_url.find('":"') + 3:] + ' ' + quote_url[quote_url.find('":"') + 3:]
+            elif retweet_quote_url is not None:
+                url_to_token = retweet_url[retweet_url.find('":"') + 3:] + ' ' + retweet_quote_url[
+                                                                                 retweet_quote_url.find('":"') + 3:]
+            else:
+                url_to_token = retweet_url[retweet_url.find('":"') + 3:]
+        else:
+            url_to_token = url[url.find('":"') + 3:]
+
+        if 'http' in full_text:
+            text_to_tokenize = full_text[0:full_text.find('http')]
+        else:
+            text_to_tokenize = full_text
+
+        tokenized_full_text = self.parse_sentence(text_to_tokenize)
+
+        if quote_text is None:
+            text_to_tokenize = url_to_token
+        else:
+            text_to_tokenize = quote_text + ' ' + url_to_token
+
+        tokenized_rest = self.parse_sentence(text_to_tokenize)
+
+        tokenized_text = tokenized_full_text + tokenized_rest
+
+        doc_length = len(tokenized_text)  # after text operations.
+        for term in tokenized_text:  # dict of all parsed tokens
+            if term not in term_dict.keys():
+                term_dict[term] = 1
+            else:
+                term_dict[term] += 1
+
+        document = Document(tweet_id, tweet_date, full_text, url, indices, retweet_text, retweet_url, retweet_indices,
+                            quote_text,
+                            quote_url, quote_indices, retweet_quote_text, retweet_quote_url, retweet_quote_indices,
+                            term_dict, doc_length)
+
+        return document
+
     def parse_sentence(self, text):
         """
         This function tokenize, remove stop words and apply lower case for every word within the text
@@ -24,28 +101,39 @@ class Parse:
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
 
-        symbols = '.,:;{}()[]"?!&-_\''
+        symbols = '.,...,:;{}()[]"?!&-_/\''
         text_tokens_without_stopwords = [w for w in text_tokens if
                                          w.lower() not in self.stop_words and w not in symbols]
         all_upper = True
-        i = 0
-        while i < len(text_tokens_without_stopwords):
-            if '-' in text_tokens_without_stopwords[i] and 'http' not in text_tokens_without_stopwords[i]:
-                temp = text_tokens_without_stopwords[i].split('-')
-                text_tokens_without_stopwords.remove(text_tokens_without_stopwords[i])
-                text_tokens_without_stopwords.insert(i, temp[0])
-                text_tokens_without_stopwords(i + 1, temp[1])
-                i += 1
-            if not text_tokens_without_stopwords[i].isupper():
+        j = 0
+
+        while j < len(text_tokens_without_stopwords):
+            if not text_tokens_without_stopwords[j].isupper():
                 all_upper = False
+            if '-' in text_tokens_without_stopwords[j] and 'http' not in text_tokens_without_stopwords[j]:
+                if text_tokens_without_stopwords[j][0] == '-':
+                    j += 1
+                    continue
+                temp = text_tokens_without_stopwords[j].split('-')
+                text_tokens_without_stopwords.remove(text_tokens_without_stopwords[j])
+                text_tokens_without_stopwords.insert(j, temp[0])
+                if temp[1] != '':
+                    text_tokens_without_stopwords.insert(j + 1, temp[1])
+                j += 1
 
-            i += 1
-
-
+            j += 1
 
         i = 0
         while i < len(text_tokens_without_stopwords):
             parsed = False  # if parsed according one of the roles
+
+            if all_upper:
+                after_parse.append(text_tokens_without_stopwords[i])
+                parsed = True
+
+            # if text_tokens_without_stopwords[i].upper() == 'COVID' or text_tokens_without_stopwords[
+            #     i].upper() == 'COVID19':
+            #     after_parse.append('COVID19')
 
             # hashtag
             if text_tokens_without_stopwords[i][0] == '#':
@@ -95,70 +183,12 @@ class Parse:
                 i += names_and_entities[1] - 1
                 parsed = True
 
-            if all_upper is True
-
-
-            if parsed is False or text_tokens_without_stopwords[i].isupper():
+            if parsed is False:
                 after_parse.append(text_tokens_without_stopwords[i])
 
             i += 1
 
-
         return after_parse
-
-    def parse_doc(self, doc_as_list):
-        """
-        This function takes a tweet document as list and break it into different fields
-        :param doc_as_list: list re-preseting the tweet.
-        :return: Document object with corresponding fields.
-        """
-        tweet_id = doc_as_list[0]
-        tweet_date = doc_as_list[1]
-        full_text = doc_as_list[2]
-        url = doc_as_list[3]
-        indices = doc_as_list[4]
-        retweet_text = doc_as_list[5]
-        retweet_url = doc_as_list[6]
-        retweet_indices = doc_as_list[7]
-        quote_text = doc_as_list[8]
-        quote_url = doc_as_list[9]
-        quote_indices = doc_as_list[10]
-        retweet_quote_text = doc_as_list[11]
-        retweet_quote_url = doc_as_list[12]
-        retweet_quote_indices = doc_as_list[13]
-        term_dict = {}
-        # TODO: decide what exactly to enter into the text to parse, so we get the most relevant information
-        # if quote_url is None and quote_text is None:
-        #     text_to_tokenize = full_text + ' ' + url
-        # else:
-        #     text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
-
-        text_to_tokenize = full_text
-        tokenized_full_text = self.parse_sentence(text_to_tokenize)
-
-        if quote_url is None and quote_text is None:
-            text_to_tokenize = url
-        else:
-            text_to_tokenize = url + ' ' + ' ' + quote_text + ' ' + quote_url
-
-        tokenized_rest = self.parse_sentence(text_to_tokenize)
-
-        tokenized_text = tokenized_full_text + tokenized_rest
-
-        doc_length = len(tokenized_text)  # after text operations.
-
-        for term in tokenized_text:  # dict of all parsed tokens
-            if term not in term_dict.keys():
-                term_dict[term] = 1
-            else:
-                term_dict[term] += 1
-
-        document = Document(tweet_id, tweet_date, full_text, url, indices, retweet_text, retweet_url, retweet_indices,
-                            quote_text,
-                            quote_url, quote_indices, retweet_quote_text, retweet_quote_url, retweet_quote_indices,
-                            term_dict, doc_length)
-
-        return document
 
     # hashtags
     def parse_hashtags(self, token):
@@ -242,9 +272,9 @@ class Parse:
 
         # for i in range(len(url_parts)):
         #     if url_parts[i] != '':
-                # if url_parts[i][0] == '?':
-                #     word = url_parts[i][1:]
-                #     url_parts[i] = word
+        # if url_parts[i][0] == '?':
+        #     word = url_parts[i][1:]
+        #     url_parts[i] = word
 
         while '' in url_parts: url_parts.remove('')
         return url_parts
@@ -254,7 +284,7 @@ class Parse:
         tag_lst = []
 
         if token[1:] != '':
-            tag_lst = [token, token[1:]] #TODO: decide if we want to save both tokens
+            tag_lst = [token, token[1:]]  # TODO: decide if we want to save both tokens
 
         return tag_lst
 
@@ -301,6 +331,8 @@ class Parse:
     def parse_names_and_entities(self, text):
         curr_name = ''
         for i in range(len(text)):
+            if text[i] == '':
+                print(text)
             if text[i][0].isupper():
                 if curr_name == '':  # for first word ignore space
                     curr_name += text[i]
@@ -315,11 +347,11 @@ class Parse:
 # text3 = 'this is @Ronen and @Bar'
 # text4 = '6% 106 percent 10.6 percentage'
 # # text5 = '1000 Million 204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
-text6 = ['Alexandria', 'Ocasio-cortez', 'is', 'Doctor Cortez']
-parse1 = Parse()
+# text6 = ['Alexandria', 'Ocasio-cortez', 'is', 'Doctor Cortez']
+# parse1 = Parse()
 # # # parse1.parse_hashtags(text1)
 # # parse1.parse_url(text2)
 # # parse1.parse_tagging(text3)
 # # parse1.parse_precentages(text4)
 # # parse1.parse_numbers(text5)
-parse1.parse_names_and_entities(text6)
+# parse1.parse_names_and_entities(text6)
