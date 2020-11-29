@@ -3,14 +3,34 @@ import numpy as np
 
 class Ranker:
     def __init__(self, inverted_index):
-        # pass
-        np.zeros(len(inverted_index.keys()), dtype=int)
 
-        # for term_i in inverted_index:
-        #     f_i_k = inverted_index[term_i][1] # value of word i in posting file
-        #
-        #     for j in inverted_index:
-        #         f_j_k = #value of word j in posting file
+        relevant_words = []
+        for term in inverted_index.keys():
+            avg = inverted_index[term][0] / 1000000
+            if avg < 0.5:
+                relevant_words.append(inverted_index[term])
+
+        associations_matrix = np.zeros(len(relevant_words)+1, dtype=int)
+        row = 1
+        col = 1
+        for word in relevant_words:
+            associations_matrix[0][col] = word
+            associations_matrix[row][0] = word
+            row += 1
+            col += 1
+
+        i = 1
+        # for word_row in associations_matrix:
+
+
+
+
+
+
+
+
+
+
 
     @staticmethod
     def rank_relevant_doc(relevant_doc):
