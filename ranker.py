@@ -1,40 +1,13 @@
+import collections
 import json
+import pickle
 
 import numpy as np
 
 
 class Ranker:
     def __init__(self, inverted_index):
-
-        relevant_words = []
-        for term in inverted_index.keys():
-            avg = inverted_index[term][0] / 1000000
-            if avg < 0.5:
-                relevant_words.append(inverted_index[term])
-
-        relevant_words = sorted(relevant_words)
-
-        associations_matrix = np.zeros(len(relevant_words)+1, dtype=int)
-        row = 1
-        col = 1
-        for word in relevant_words:
-            associations_matrix[0][col] = word
-            associations_matrix[row][0] = word
-            row += 1
-            col += 1
-
-        i = 1
-        for word in relevant_words:
-            list_of_rows = inverted_index[word][3]
-            counter = 0
-            if word[0].isalpha():
-                with open(output_path + '\\' + word[0] + '.jason') as f:
-                    for line in f:
-                        if counter == list_of_rows[0]:
-                            j_content = json.loads(line)
-                            list_of_rows.remove(list_of_rows[0])
-                        counter += 1
-
+        pass
 
     @staticmethod
     def rank_relevant_doc(relevant_doc):
@@ -56,74 +29,7 @@ class Ranker:
         """
         return sorted_relevant_doc[:k]
 
-    def create_matrix(self, inverted_index):
 
-        relevant_terms = []
-        for term in inverted_index.keys():
-            if inverted_index[term][0] > 5:
-                relevant_terms.append(term)
-
-        relevant_words = sorted(relevant_terms)
-
-        for term1 in relevant_words:
-            lines_in_file = inverted_index[term1][3]
-            tweet_ids_and_freq_of_term1 = []
-            line_counter = 0
-            if term1[0].isalpha():
-                with open(output_path + '\\' + term1[0] + '.jason') as f:
-                    for line in f:
-                        if line_counter == lines_in_file[0]:
-                            j_content = json.loads(line)
-                            tweet_ids_and_freq_of_term1.append(j_content)
-                            lines_in_file.remove(lines_in_file[0])
-                            if not lines_in_file:
-                                break
-                        line_counter += 1
-            else:
-                with open(output_path + '\\' + 'other' + '.jason') as f:
-                    for line in f:
-                        if line_counter == lines_in_file[0]:
-                            j_content = json.loads(line)
-                            tweet_ids_and_freq_of_term1.append(j_content)
-                            lines_in_file.remove(lines_in_file[0])
-                            if not lines_in_file:
-                                break
-                        line_counter += 1
-
-            for term2 in relevant_words:
-                lines_in_file = inverted_index[term2][3]
-                tweet_ids_and_freq_of_term2 = []
-                line_counter = 0
-                if term2[0].isalpha():
-                    with open(output_path + '\\' + term2[0] + '.jason') as f:
-                        for line in f:
-                            if line_counter == lines_in_file[0]:
-                                j_content = json.loads(line)
-                                tweet_ids_and_freq_of_term2.append(j_content)
-                                lines_in_file.remove(lines_in_file[0])
-                                if not lines_in_file:
-                                    break
-                            line_counter += 1
-                else:
-                    with open(output_path + '\\' + 'other' + '.jason') as f:
-                        for line in f:
-                            if line_counter == lines_in_file[0]:
-                                j_content = json.loads(line)
-                                tweet_ids_and_freq_of_term2.append(j_content)
-                                lines_in_file.remove(lines_in_file[0])
-                                if not lines_in_file:
-                                    break
-                            line_counter += 1
-
-                cii = 0
-                cij = 0
-                cjj = 0
-                for tup1 in tweet_ids_and_freq_of_term1:
-                    for tup2 in tweet_ids_and_freq_of_term2:
-                        if term1 == term2:
-                            cii += tup1[1] * tup2[1]
-                        elif tup1[0] == tup2[0]:
-                            cij +=
 
 
 
