@@ -26,6 +26,72 @@ def run_engine(corpus_path, output_path):  # , stemming, queries, num_docs_to_re
     indexer = Indexer(config)
     names_and_entities = {}
 
+    # start_time = time.time()
+    # with open('inverted_idx.pkl', 'rb') as inverted_idx:
+    #     inverted_idx = pickle.load(inverted_idx)
+    # relevant_terms = []
+    # for term in inverted_idx.keys():
+    #     if inverted_idx[term][0] > 5:
+    #         relevant_terms.append(term)
+    #
+    # relevant_words = sorted(relevant_terms)
+    #
+    # # associations_matrix = np.zeros(shape=(len(relevant_words), len(relevant_words)), dtype=int)
+    # associations_matrix = {i: [0]*len(relevant_words) for i in relevant_words}
+    # words_dict = {}
+    #
+    # for word in relevant_words:
+    #     words_dict[word] = []
+    #     lines_in_file = inverted_idx[word][3]
+    #     line_counter = 0
+    #     if word[0].isalpha():
+    #         with open(output_path + '\\' + word[0] + '.json') as f:
+    #             for line in f:
+    #                 if line_counter == lines_in_file[0]:
+    #                     j_content = json.loads(line)
+    #                     words_dict[word] = j_content
+    #                     lines_in_file.remove(lines_in_file[0])
+    #                     if not lines_in_file:
+    #                         break
+    #                 line_counter += 1
+    #     else:
+    #         with open(output_path + '\\' + 'other' + '.json') as f:
+    #             for line in f.readlines():
+    #                 if line_counter == lines_in_file[0]:
+    #                     j_content = json.loads(line)
+    #                     key = [*j_content][0]
+    #                     val = j_content[key]
+    #                     words_dict[word].append((key, val))
+    #                     lines_in_file.remove(lines_in_file[0])
+    #                     if not lines_in_file:
+    #                         break
+    #                 line_counter += 1
+    #
+    #     for key_word in words_dict:
+    #         if key_word == word:
+    #             cii = 0
+    #             for val in words_dict[key_word]:
+    #                 cii += val[1] ** 2
+    #
+    #             idx = relevant_words.index(key_word)
+    #             associations_matrix[idx, idx] = cii
+    #
+    #         else:
+    #             cij = 0
+    #             for val in words_dict[key_word]:
+    #                 for tup in words_dict[word]:
+    #                     if tup[0] == val[0]:
+    #                         cij += tup[1] * val[1]
+    #                 idx_i = relevant_words.index(key_word)
+    #                 idx_j = relevant_words.index(word)
+    #                 associations_matrix[idx_i, idx_j] = cij
+    #                 associations_matrix[idx_j, idx_i] = cij
+    #
+    # utils.save_obj(associations_matrix, "associations_matrix")
+    #
+    # end_time = time.time()
+    # print("--- %s seconds ---" % (end_time - start_time))
+
     corpus_path = config.get__corpusPath()
     parsed_documents = []
     counter_check = 1
@@ -69,73 +135,72 @@ def run_engine(corpus_path, output_path):  # , stemming, queries, num_docs_to_re
     end_parse_index_time = time.time()
     print("--- %s seconds ---" % (end_parse_index_time - start_time))
 
-    # with open('inverted_idx.pkl', 'rb') as inverted_idx:
-    #     inverted_idx = pickle.load(inverted_idx)
+#--------------------build matrix-----------------------------------
 
-    start_time = time.time()
-
-    relevant_terms = []
-    for term in indexer.inverted_idx.keys():
-        if indexer.inverted_idx[term][0] > 5:
-            relevant_terms.append(term)
-
-    relevant_words = sorted(relevant_terms)
-
-    associations_matrix = np.zeros(shape=(len(relevant_words), len(relevant_words)), dtype=int)
-
-    words_dict = {}
-
-    for word in relevant_words:
-        words_dict[word] = []
-        lines_in_file = indexer.inverted_idx[word][3]
-        line_counter = 0
-        if word[0].isalpha():
-            with open(output_path + '\\' + word[0] + '.json') as f:
-                for line in f:
-                    if line_counter == lines_in_file[0]:
-                        j_content = json.loads(line)
-                        words_dict[word] = j_content
-                        lines_in_file.remove(lines_in_file[0])
-                        if not lines_in_file:
-                            break
-                    line_counter += 1
-        else:
-            with open(output_path + '\\' + 'other' + '.json') as f:
-                for line in f.readlines():
-                    if line_counter == lines_in_file[0]:
-                        j_content = json.loads(line)
-                        key = [*j_content][0]
-                        val = j_content[key]
-                        words_dict[word].append((key, val))
-                        lines_in_file.remove(lines_in_file[0])
-                        if not lines_in_file:
-                            break
-                    line_counter += 1
-
-        for key_word in words_dict:
-            if key_word == word:
-                cii = 0
-                for val in words_dict[key_word]:
-                    cii += val[1] ** 2
-
-                idx = relevant_words.index(key_word)
-                associations_matrix[idx, idx] = cii
-
-            else:
-                cij = 0
-                for val in words_dict[key_word]:
-                    for tup in words_dict[word]:
-                        if tup[0] == val[0]:
-                            cij += tup[1] * val[1]
-                    idx_i = relevant_words.index(key_word)
-                    idx_j = relevant_words.index(word)
-                    associations_matrix[idx_i, idx_j] = cij
-                    associations_matrix[idx_j, idx_i] = cij
-
-    utils.save_obj(associations_matrix, "associations_matrix")
-
-    end_time = time.time()
-    print("--- %s seconds ---" % (end_time - start_time))
+    # start_time = time.time()
+    #
+    # relevant_terms = []
+    # for term in indexer.inverted_idx.keys():
+    #     if indexer.inverted_idx[term][0] > 5:
+    #         relevant_terms.append(term)
+    #
+    # relevant_words = sorted(relevant_terms)
+    #
+    # # associations_matrix = np.zeros(shape=(len(relevant_words), len(relevant_words)), dtype=int)
+    # associations_matrix = {i: [0]*len(relevant_words) for i in relevant_words}
+    # words_dict = {}
+    #
+    # for word in relevant_words:
+    #     words_dict[word] = []
+    #     lines_in_file = indexer.inverted_idx[word][3]
+    #     line_counter = 0
+    #     if word[0].isalpha():
+    #         with open(output_path + '\\' + word[0] + '.json') as f:
+    #             for line in f:
+    #                 if line_counter == lines_in_file[0]:
+    #                     j_content = json.loads(line)
+    #                     words_dict[word] = j_content
+    #                     lines_in_file.remove(lines_in_file[0])
+    #                     if not lines_in_file:
+    #                         break
+    #                 line_counter += 1
+    #     else:
+    #         with open(output_path + '\\' + 'other' + '.json') as f:
+    #             for line in f.readlines():
+    #                 if line_counter == lines_in_file[0]:
+    #                     j_content = json.loads(line)
+    #                     key = [*j_content][0]
+    #                     val = j_content[key]
+    #                     words_dict[word].append((key, val))
+    #                     lines_in_file.remove(lines_in_file[0])
+    #                     if not lines_in_file:
+    #                         break
+    #                 line_counter += 1
+    #
+    #     for key_word in words_dict:
+    #         if key_word == word:
+    #             cii = 0
+    #             for val in words_dict[key_word]:
+    #                 cii += val[1] ** 2
+    #
+    #             idx = relevant_words.index(key_word)
+    #             associations_matrix[idx, idx] = cii
+    #
+    #         else:
+    #             cij = 0
+    #             for val in words_dict[key_word]:
+    #                 for tup in words_dict[word]:
+    #                     if tup[0] == val[0]:
+    #                         cij += tup[1] * val[1]
+    #                 idx_i = relevant_words.index(key_word)
+    #                 idx_j = relevant_words.index(word)
+    #                 associations_matrix[idx_i, idx_j] = cij
+    #                 associations_matrix[idx_j, idx_i] = cij
+    #
+    # utils.save_obj(associations_matrix, "associations_matrix")
+    #
+    # end_time = time.time()
+    # print("--- %s seconds ---" % (end_time - start_time))
 
 def load_index():
     print('Load inverted index')

@@ -101,7 +101,7 @@ class Parse:
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
 
-        symbols = '.,...,:;{}()[]"?!&-_/\''
+        symbols = '.,...,:;{}()[]"*?!&-_/\''
         text_tokens_without_stopwords = [w for w in text_tokens if
                                          w.lower() not in self.stop_words and w not in symbols]
         all_upper = True
@@ -124,45 +124,46 @@ class Parse:
             j += 1
 
         i = 0
+
+        covid = ['COVID', 'COVID19', 'COVID-19', 'CORONAVIROS']
         while i < len(text_tokens_without_stopwords):
             parsed = False  # if parsed according one of the roles
 
-            if all_upper:
-                after_parse.append(text_tokens_without_stopwords[i])
-                parsed = True
-
-            # if text_tokens_without_stopwords[i].upper() == 'COVID' or text_tokens_without_stopwords[
-            #     i].upper() == 'COVID19':
-            #     after_parse.append('COVID19')
+            if text_tokens_without_stopwords[i].upper() in covid:
+                if i < len(text_tokens_without_stopwords) - 1 and text_tokens_without_stopwords[i + 1] == '19':
+                    after_parse.append('COVID19')
+                    i += 2
+                    continue
+                after_parse.append('COVID19')
 
             # hashtag
-            if text_tokens_without_stopwords[i][0] == '#':
+            elif text_tokens_without_stopwords[i][0] == '#':
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
                 after_parse.extend(hashtag)
                 parsed = True
 
             # tagging
-            if text_tokens_without_stopwords[i][0] == '@':
+            elif text_tokens_without_stopwords[i][0] == '@':
                 tag = self.parse_tagging(text_tokens_without_stopwords[i])
-                after_parse.extend(tag)
+                after_parse.append(tag)
                 parsed = True
 
             # url
-            if 'http' in text_tokens_without_stopwords[i]:
+            elif 'http' in text_tokens_without_stopwords[i]:
                 url = self.parse_url(text_tokens_without_stopwords[i])
                 after_parse.extend(url)
                 parsed = True
 
             # percent
-            last_token = len(text_tokens_without_stopwords) - 2
-            if (i < last_token) and (text_tokens_without_stopwords[i + 1] == 'percent' or text_tokens_without_stopwords[
-                i + 1] == 'percentage' or text_tokens_without_stopwords[i + 1] == '%'):
-                percentage = self.parse_percentages(text_tokens_without_stopwords[i])
-                after_parse.append(percentage)
-                parsed = True
+            elif i < len(text_tokens_without_stopwords) - 2:
+                if text_tokens_without_stopwords[i + 1] == 'percent' or text_tokens_without_stopwords[
+                    i + 1] == 'percentage' or text_tokens_without_stopwords[i + 1] == '%':
+                    percentage = self.parse_percentages(text_tokens_without_stopwords[i])
+                    after_parse.append(percentage)
+                    parsed = True
 
             # numbers
-            if text_tokens_without_stopwords[i].replace(',', '').replace('.', '', 1).isdigit():
+            elif text_tokens_without_stopwords[i].replace(',', '').replace('.', '', 1).isdigit():
                 if '.' in text_tokens_without_stopwords[i]:
                     curr_num = float(text_tokens_without_stopwords[i].replace(',', ''))
                 else:
@@ -174,6 +175,10 @@ class Parse:
                     number = self.parse_numbers(curr_num, text_tokens_without_stopwords[i + 1])
 
                 after_parse.append(number)
+                parsed = True
+
+            elif all_upper:
+                after_parse.append(text_tokens_without_stopwords[i])
                 parsed = True
 
             # names and entities
@@ -188,6 +193,7 @@ class Parse:
 
             i += 1
 
+        while '' in after_parse: after_parse.remove('')
         return after_parse
 
     # hashtags
@@ -260,7 +266,7 @@ class Parse:
     # url
     def parse_url(self, token):
 
-        url_parts = re.split('/|{|}|://|:|=|"|-|[?]|#', token)
+        url_parts = re.split('/|{|}|[*]|://|:|=|"|-|[?]|#', token)
 
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
@@ -281,12 +287,11 @@ class Parse:
 
     # tagging
     def parse_tagging(self, token):
-        tag_lst = []
-
+        tag = ''
         if token[1:] != '':
-            tag_lst = [token, token[1:]]  # TODO: decide if we want to save both tokens
+            tag = token
 
-        return tag_lst
+        return tag
 
     # percent
     def parse_percentages(self, token):
