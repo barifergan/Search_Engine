@@ -1,12 +1,13 @@
 import collections
 import json
+import math
 import pickle
 
 import numpy as np
 
 
 class Ranker:
-    def __init__(self, inverted_index):
+    def __init__(self):
         pass
 
     @staticmethod
@@ -17,6 +18,9 @@ class Ranker:
         :param relevant_doc: dictionary of documents that contains at least one term from the query.
         :return: sorted list of documents by score
         """
+
+
+
         return sorted(relevant_doc.items(), key=lambda item: item[1], reverse=True)
 
     @staticmethod

@@ -1,6 +1,4 @@
 import json
-import collections
-
 from string import ascii_lowercase
 
 from nltk.corpus import stopwords
@@ -17,7 +15,6 @@ class Indexer:
         self.file_line_indexes = {}
         self.docs_dict = {}
         self.stop_words = stopwords.words('english')
-
         for c in ascii_lowercase:
             self.file_line_indexes[c] = 1
         self.file_line_indexes['hashtag'] = 1
@@ -125,6 +122,10 @@ class Indexer:
                 self.docs_dict[d.tweet_id] = (
                     document_dictionary[max(document_dictionary, key=document_dictionary.get)], count_unique_words)
 
+        with open(output_path + '\\' + 'docs_dict' + '.json', 'a') as outfile:
+            for key in self.docs_dict.keys():
+                json.dump({key: self.docs_dict[key]}, outfile)
+
         sorted_posting_keys = sorted(self.postingDict.keys(), key=lambda x: x.lower())
 
         curr_char = ''
@@ -154,7 +155,7 @@ class Indexer:
                             break
             elif sorted_posting_keys[i][0] == '#':
                 with open((output_path + '\\hashtag.json'), 'a') as outfile:
-                    while i < len(sorted_posting_keys) and not sorted_posting_keys[i][0].isalpha():
+                    while i < len(sorted_posting_keys) and sorted_posting_keys[i][0] == '#':
                         for value in self.postingDict[sorted_posting_keys[i]]:
                             json.dump({value[0]: value[1]}, outfile)
                             outfile.write('\n')
@@ -163,7 +164,7 @@ class Indexer:
                         i += 1
             elif sorted_posting_keys[i][0] == '@':
                 with open((output_path + '\\tagging.json'), 'a') as outfile:
-                    while i < len(sorted_posting_keys) and not sorted_posting_keys[i][0].isalpha():
+                    while i < len(sorted_posting_keys) and sorted_posting_keys[i][0] == '@':
                         for value in self.postingDict[sorted_posting_keys[i]]:
                             json.dump({value[0]: value[1]}, outfile)
                             outfile.write('\n')
@@ -172,7 +173,7 @@ class Indexer:
                         i += 1
             elif sorted_posting_keys[i][0].isdigit():
                 with open((output_path + '\\number.json'), 'a') as outfile:
-                    while i < len(sorted_posting_keys) and not sorted_posting_keys[i][0].isalpha():
+                    while i < len(sorted_posting_keys) and sorted_posting_keys[i][0].isdigit():
                         for value in self.postingDict[sorted_posting_keys[i]]:
                             json.dump({value[0]: value[1]}, outfile)
                             outfile.write('\n')
@@ -182,17 +183,10 @@ class Indexer:
 
             else:
                 with open((output_path + '\\other.json'), 'a') as outfile:
-                    while i < len(sorted_posting_keys) and not sorted_posting_keys[i][0].isalpha():
+                    while i < len(sorted_posting_keys) and not sorted_posting_keys[i][0].isalpha() and not sorted_posting_keys[i][0] == '@' and not sorted_posting_keys[i][0].isdigit() and not sorted_posting_keys[i][0] == '#':
                         for value in self.postingDict[sorted_posting_keys[i]]:
                             json.dump({value[0]: value[1]}, outfile)
                             outfile.write('\n')
                             self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['other'])
                             self.file_line_indexes['other'] += 1
                         i += 1
-
-        # restart posting dict
-
-# config = ConfigClass()
-# indexer1 = Indexer(config)
-# dict = {'RT': '1', 'COVID': '4'}
-# indexer1.add_new_doc(dict)

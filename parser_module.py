@@ -101,7 +101,7 @@ class Parse:
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
 
-        symbols = '.,...,:;{}()[]"*?!&-_/\''
+        symbols = '.,...,:;{}()[]"*?!&$-_/\''
         text_tokens_without_stopwords = [w for w in text_tokens if
                                          w.lower() not in self.stop_words and w not in symbols]
         all_upper = True
@@ -161,6 +161,8 @@ class Parse:
                     percentage = self.parse_percentages(text_tokens_without_stopwords[i])
                     after_parse.append(percentage)
                     parsed = True
+                    i +=2
+                    continue
 
             # numbers
             elif text_tokens_without_stopwords[i].replace(',', '').replace('.', '', 1).isdigit():
@@ -266,7 +268,7 @@ class Parse:
     # url
     def parse_url(self, token):
 
-        url_parts = re.split('/|{|}|[*]|://|:|=|"|-|[?]|#', token)
+        url_parts = re.split('/|{|}|[*]|://|:|=|"|-|[?]|#|[$]', token)
 
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
