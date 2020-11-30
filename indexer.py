@@ -156,37 +156,54 @@ class Indexer:
             elif sorted_posting_keys[i][0] == '#':
                 with open((output_path + '\\hashtag.json'), 'a') as outfile:
                     while i < len(sorted_posting_keys) and sorted_posting_keys[i][0] == '#':
-                        for value in self.postingDict[sorted_posting_keys[i]]:
-                            json.dump({value[0]: value[1]}, outfile)
-                            outfile.write('\n')
-                            self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['hashtag'])
-                            self.file_line_indexes['hashtag'] += 1
+                        # for value in self.postingDict[sorted_posting_keys[i]]:
+                        #     json.dump({value[0]: value[1]}, outfile)
+                        #     outfile.write('\n')
+                        #     self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['hashtag'])
+                        #     self.file_line_indexes['hashtag'] += 1
+                        json.dump({sorted_posting_keys[i]: self.postingDict[sorted_posting_keys[i]]}, outfile)
+                        outfile.write('\n')
+                        self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['hashtag'])
+                        self.file_line_indexes['hashtag'] += 1
                         i += 1
             elif sorted_posting_keys[i][0] == '@':
                 with open((output_path + '\\tagging.json'), 'a') as outfile:
                     while i < len(sorted_posting_keys) and sorted_posting_keys[i][0] == '@':
-                        for value in self.postingDict[sorted_posting_keys[i]]:
-                            json.dump({value[0]: value[1]}, outfile)
-                            outfile.write('\n')
-                            self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['tagging'])
-                            self.file_line_indexes['tagging'] += 1
+                        # for value in self.postingDict[sorted_posting_keys[i]]:
+                        #     json.dump({value[0]: value[1]}, outfile)
+                        #     outfile.write('\n')
+                        #     self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['tagging'])
+                        #     self.file_line_indexes['tagging'] += 1
+
+                        json.dump({sorted_posting_keys[i]: self.postingDict[sorted_posting_keys[i]]}, outfile)
+                        outfile.write('\n')
+                        self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['tagging'])
+                        self.file_line_indexes['tagging'] += 1
                         i += 1
             elif sorted_posting_keys[i][0].isdigit():
                 with open((output_path + '\\number.json'), 'a') as outfile:
                     while i < len(sorted_posting_keys) and sorted_posting_keys[i][0].isdigit():
-                        for value in self.postingDict[sorted_posting_keys[i]]:
-                            json.dump({value[0]: value[1]}, outfile)
-                            outfile.write('\n')
-                            self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['number'])
-                            self.file_line_indexes['number'] += 1
+                        # for value in self.postingDict[sorted_posting_keys[i]]:
+                        #     json.dump({value[0]: value[1]}, outfile)
+                        #     outfile.write('\n')
+                        #     self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['number'])
+                        #     self.file_line_indexes['number'] += 1
+                        json.dump({sorted_posting_keys[i]: self.postingDict[sorted_posting_keys[i]]}, outfile)
+                        outfile.write('\n')
+                        self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['number'])
+                        self.file_line_indexes['number'] += 1
                         i += 1
 
             else:
                 with open((output_path + '\\other.json'), 'a') as outfile:
                     while i < len(sorted_posting_keys) and not sorted_posting_keys[i][0].isalpha() and not sorted_posting_keys[i][0] == '@' and not sorted_posting_keys[i][0].isdigit() and not sorted_posting_keys[i][0] == '#':
-                        for value in self.postingDict[sorted_posting_keys[i]]:
-                            json.dump({value[0]: value[1]}, outfile)
-                            outfile.write('\n')
-                            self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['other'])
-                            self.file_line_indexes['other'] += 1
+                        # for value in self.postingDict[sorted_posting_keys[i]]:
+                        #     json.dump({value[0]: value[1]}, outfile)
+                        #     outfile.write('\n')
+                        #     self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['other'])
+                        #     self.file_line_indexes['other'] += 1
+                        json.dump({sorted_posting_keys[i]: self.postingDict[sorted_posting_keys[i]]}, outfile)
+                        outfile.write('\n')
+                        self.inverted_idx[sorted_posting_keys[i]][3].append(self.file_line_indexes['other'])
+                        self.file_line_indexes['other'] += 1
                         i += 1
