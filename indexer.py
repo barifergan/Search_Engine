@@ -106,7 +106,7 @@ class Indexer:
                             del (self.inverted_idx[term.upper()])
                         else:
                             temp_term = term.lower()
-                            self.inverted_idx[temp_term] = [1, d.tweet_date, index_in_text, []]
+                            self.inverted_idx[temp_term] = [1, []]
                             self.postingDict[temp_term] = []
 
                     if temp_term in self.postingDict.keys():

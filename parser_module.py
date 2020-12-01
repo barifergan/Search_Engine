@@ -125,7 +125,7 @@ class Parse:
 
         i = 0
 
-        covid = ['COVID', 'COVID19', 'COVID-19', 'CORONAVIROS']
+        covid = ['COVID', 'COVID19', 'COVID-19', 'CORONAVIRUS']
         while i < len(text_tokens_without_stopwords):
             parsed = False  # if parsed according one of the roles
 
