@@ -13,7 +13,7 @@ class Ranker:
         :param relevant_doc: dictionary of documents that contains at least one term from the query.
         :return: sorted list of documents by score
         """
-        results= {}
+        results = {}
         for doc in relevant_doc:
             sum_wij = sum(relevant_doc[doc])
             sum_wij2 = sum([x**2 for x in relevant_doc[doc]])
