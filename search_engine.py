@@ -222,7 +222,8 @@ def search_and_rank_query(query, inverted_index, k, output_path):
 
     p = Parse()
     query_as_list = p.parse_sentence(query)
-    searcher = Searcher(inverted_index, 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\json_files')
+
+    searcher = Searcher(inverted_index, 'C:\\Users\\ronen\\PycharmProjects\\Search_Engine\\json_files')
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list, output_path, num_of_docs_in_corpus)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)

@@ -1,4 +1,6 @@
 import json
+import math
+
 import numpy as np
 from parser_module import Parse
 from ranker import Ranker
@@ -50,7 +52,10 @@ class Searcher:
             except:
                 print('term {} not found in posting'.format(term))
 
+        idf = []
         for word in query:
+            dfi = self.inverted_index[word]
+            idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
             for doc in docs_content.keys():
                 exist = False
                 for pair in docs_content[doc]:
@@ -60,7 +65,7 @@ class Searcher:
                 if not exist:
                     relevant_docs[doc].append(0)
 
-        # devide each element in the vector by thr max(f) of the doc. the information in docs_dict
+        # divide each element in the vector by thr max(f) of the doc. the information in docs_dict
 
         with open(output_path + '\\' + 'docs_dict.json') as f:
             for line in f:
@@ -69,6 +74,7 @@ class Searcher:
                 if key in relevant_docs.keys():
                     max_tf = j_content[key][0]
                     relevant_docs[key] = np.divide(relevant_docs[key], max_tf)
+                    relevant_docs[key] = np.multiply(relevant_docs[key], idf)
 
         # calculate idf of each element in the vector (idf is log2(number of docs in the corpus \ df(from inverted index)
 
@@ -92,7 +98,7 @@ class Searcher:
 
         with open(output_path + '\\' + file_name + '.json') as f:
             lines_counter = 1
-            dict_to_return = {}
+            dict_to_return = {}  # key: term, value:list of tweets id
             for line in f:
                 if lines_counter == rows_num[0]:
                     j_content = json.loads(line)
@@ -109,45 +115,10 @@ class Searcher:
                 lines_counter += 1
         return dict_to_return
 
-        #         if term not in self.inverted_index.keys():
-        #             continue
-        #         if term[0].isalpha():
-        #             filename = term[0].lower()
-        #         elif term[0] == '@':
-        #             filename = 'tagging'
-        #         elif term[0] == '#':
-        #             filename = 'hashtag'
-        #
-        #         else:
-        #
-        #         with open(output_path + '\\' + term[0]. + '.json') as f:
-        #             lines_in_file = self.inverted_indexx[term][3]
-        #             line_counter = 0
-        #             for line in f:
-        #                 if line_counter == lines_in_file[0]:
-        #                     j_content = json.loads(line)
-        #                     key = [*j_content][0]
-        #                     val = j_content[key]
-        #                     if key not in relevant_docs.keys():
-        #                         relevant_docs[key] = []
-        #                     if term not in tweets.keys():
-        #                         tweets[term] = []
-        #                     tweets[term].append(key, val)
-        #                     lines_in_file.remove(lines_in_file[0])
-        #                     if not lines_in_file:
-        #                         break
-        #                 line_counter += 1
-        #
-        #     except:
-        #         print('term {} not found in posting'.format(term))
-        #
-        # for key in relevant_docs.keys():
-        #     for tweet_id in tweets:
-        #         if key == tweets[tweet_id][0]:
-        #             relevant_docs[key].append(tweets[tweet_id][1])
-        #
-        # with open(output_path + '\\' + 'docs_dict' + '.json') as f:
 
-#
-# s = Searcher()
-# query = 'Computer science'
+    def extend_query(self, query):
+
+
+
+
+        return extented_query
