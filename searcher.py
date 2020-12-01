@@ -116,9 +116,9 @@ class Searcher:
         return dict_to_return
 
 
-    def extend_query(self, query):
-
-
-
-
-        return extented_query
+    # def extend_query(self, query):
+    #
+    #
+    #
+    #
+    #     return extented_query

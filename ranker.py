@@ -1,9 +1,4 @@
-import collections
-import json
 import math
-import pickle
-
-import numpy as np
 
 
 class Ranker:

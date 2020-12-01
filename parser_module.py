@@ -131,10 +131,10 @@ class Parse:
 
             if text_tokens_without_stopwords[i].upper() in covid:
                 if i < len(text_tokens_without_stopwords) - 1 and text_tokens_without_stopwords[i + 1] == '19':
-                    after_parse.append('COVID19')
-                    i += 2
-                    continue
+                    i += 1
+                i += 1
                 after_parse.append('COVID19')
+                continue
 
             # hashtag
             elif text_tokens_without_stopwords[i][0] == '#':
@@ -268,7 +268,7 @@ class Parse:
     # url
     def parse_url(self, token):
 
-        url_parts = re.split('/|{|}|[*]|://|:|=|"|-|[?]|#|[$]', token)
+        url_parts = re.split('/|[{]|}|[*]|://|:|=|"|-|[?]|#|[$]', token)
 
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
@@ -277,12 +277,6 @@ class Parse:
                 url_parts.remove(url_parts[i])
                 url_parts.insert(i, sub_url1)
                 url_parts.insert(i + 1, sub_url2)
-
-        # for i in range(len(url_parts)):
-        #     if url_parts[i] != '':
-        # if url_parts[i][0] == '?':
-        #     word = url_parts[i][1:]
-        #     url_parts[i] = word
 
         while '' in url_parts: url_parts.remove('')
         return url_parts

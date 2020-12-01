@@ -83,50 +83,50 @@ def run_engine(corpus_path, output_path):  # , stemming, queries, num_docs_to_re
 
 
 # --------------------------------------------------------------start here-------------------------------------------------------------------------
-# corpus_path = config.get__corpusPath()
-# parsed_documents = []
-# counter_check = 1
-num_of_docs_in_corpus = 0
-# for subdir, dirs, files in os.walk(corpus_path):
-#     for file in files:
-#         file_type = file[-8:]
-#         if file_type == '.parquet':
-#             file_name = file
-#             documents_list = r.read_file(file_name)
-#             for idx, document in enumerate(documents_list):
-#                 # parse the document
-#                 exist_in_doc = False
-#                 parsed_document = p.parse_doc(document)
-#                 # index the document data
-#                 for term in parsed_document.term_doc_dictionary:
-#
-#                     if (len(term) > 0) and (term[0].isupper()) and ' ' in term:
-#                         if term not in names_and_entities.keys():
-#                             names_and_entities[term] = 1
-#                             exist_in_doc = True
-#
-#                         elif exist_in_doc is True:
-#                             continue
-#                         else:
-#                             names_and_entities[term] += 1
-#                             exist_in_doc = True
-#
-#                 parsed_documents.append(parsed_document)
-#                 limit_to_index = 100000
-#                 if len(parsed_documents) == 1000:
-#                     indexer.add_new_doc(parsed_documents, names_and_entities, output_path, counter_check)
-#                     print('Parsed and indexed ' + str(counter_check * 100000) + ' files')
-#                     counter_check += 1
-#                     parsed_documents = []
-#                     num_of_docs_in_corpus += limit_to_index
-#
-# print('Finished parsing and indexing. Starting to export files')
-#
-# utils.save_obj(indexer.inverted_idx, "inverted_idx")
-# # utils.save_obj(indexer.postingDict, "posting")
-#
-# end_parse_index_time = time.time()
-# print("--- %s seconds ---" % (end_parse_index_time - start_time))
+    corpus_path = config.get__corpusPath()
+    parsed_documents = []
+    counter_check = 1
+    num_of_docs_in_corpus = 0
+    for subdir, dirs, files in os.walk(corpus_path):
+        for file in files:
+            file_type = file[-8:]
+            if file_type == '.parquet':
+                file_name = file
+                documents_list = r.read_file(file_name)
+                for idx, document in enumerate(documents_list):
+                    # parse the document
+                    exist_in_doc = False
+                    parsed_document = p.parse_doc(document)
+                    # index the document data
+                    for term in parsed_document.term_doc_dictionary:
+
+                        if (len(term) > 0) and (term[0].isupper()) and ' ' in term:
+                            if term not in names_and_entities.keys():
+                                names_and_entities[term] = 1
+                                exist_in_doc = True
+
+                            elif exist_in_doc is True:
+                                continue
+                            else:
+                                names_and_entities[term] += 1
+                                exist_in_doc = True
+
+                    parsed_documents.append(parsed_document)
+                    limit_to_index = 1000000
+                    if len(parsed_documents) == limit_to_index:
+                        indexer.add_new_doc(parsed_documents, names_and_entities, output_path, counter_check)
+                        print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
+                        counter_check += 1
+                        parsed_documents = []
+                        num_of_docs_in_corpus += limit_to_index
+
+    print('Finished parsing and indexing. Starting to export files')
+
+    utils.save_obj(indexer.inverted_idx, "inverted_idx")
+    # utils.save_obj(indexer.postingDict, "posting")
+
+    end_parse_index_time = time.time()
+    print("--- %s seconds ---" % (end_parse_index_time - start_time))
 # --------------------------------------------------------------end here-------------------------------------------------------------------------
 
 
@@ -179,7 +179,6 @@ num_of_docs_in_corpus = 0
 
 
 def extract_from_posting_file(term, rows_num, output_path):
-    t = term[0]
     if term[0].isalpha():
         file_name = term[0]
     elif term[0] == '#':
