@@ -15,6 +15,7 @@ class Indexer:
         self.file_line_indexes = {}
         self.docs_dict = {}
         self.stop_words = stopwords.words('english')
+        self.num_of_docs_in_corpus = 0
         for c in ascii_lowercase:
             self.file_line_indexes[c] = 1
         self.file_line_indexes['hashtag'] = 1
@@ -30,7 +31,6 @@ class Indexer:
         :return: -
         """
 
-        doc_num_check = 1
         self.postingDict = {}
         self.docs_dict = {}
         for d in documents:
@@ -115,8 +115,8 @@ class Indexer:
                 except:
                     print('problem with the following key {}'.format(term))
                     print(document_dictionary.keys())
-                    print(counter_check, doc_num_check, term_num_check)
-            doc_num_check += 1
+                    print(counter_check, self.num_of_docs_in_corpus, term_num_check)
+            self.num_of_docs_in_corpus += 1
 
             if document_dictionary:  # if dict isn't empty
                 self.docs_dict[d.tweet_id] = (
@@ -125,6 +125,7 @@ class Indexer:
         with open(output_path + '\\' + 'docs_dict' + '.json', 'a') as outfile:
             for key in self.docs_dict.keys():
                 json.dump({key: self.docs_dict[key]}, outfile)
+                outfile.write('\n')
 
         sorted_posting_keys = sorted(self.postingDict.keys(), key=lambda x: x.lower())
 
@@ -137,18 +138,29 @@ class Indexer:
                 with open(output_path + '\\' + curr_char + '.json', 'a') as outfile:
                     while i < len(sorted_posting_keys):
                         if sorted_posting_keys[i][0].lower() == curr_char:
-                            for value in self.postingDict[sorted_posting_keys[i]]:
-                                json.dump({value[0]: value[1]}, outfile)
-                                outfile.write('\n')
-                                to_add = ''
-                                if sorted_posting_keys[i].lower() in self.inverted_idx.keys():
-                                    to_add = sorted_posting_keys[i].lower()
-                                elif sorted_posting_keys[i].upper() in self.inverted_idx.keys():
-                                    to_add = sorted_posting_keys[i].upper()
-                                else:
-                                    to_add = sorted_posting_keys[i]
-                                self.inverted_idx[to_add][3].append(self.file_line_indexes[curr_char])
-                                self.file_line_indexes[curr_char] += 1
+                            # for value in self.postingDict[sorted_posting_keys[i]]:
+                                # json.dump({value[0]: value[1]}, outfile)
+                                # outfile.write('\n')
+                                # to_add = ''
+                                # if sorted_posting_keys[i].lower() in self.inverted_idx.keys():
+                                #     to_add = sorted_posting_keys[i].lower()
+                                # elif sorted_posting_keys[i].upper() in self.inverted_idx.keys():
+                                #     to_add = sorted_posting_keys[i].upper()
+                                # else:
+                                #     to_add = sorted_posting_keys[i]
+                                # self.inverted_idx[to_add][3].append(self.file_line_indexes[curr_char])
+                                # self.file_line_indexes[curr_char] += 1
+                            json.dump({sorted_posting_keys[i]: self.postingDict[sorted_posting_keys[i]]}, outfile)
+                            outfile.write('\n')
+                            to_add = ''
+                            if sorted_posting_keys[i].lower() in self.inverted_idx.keys():
+                                to_add = sorted_posting_keys[i].lower()
+                            elif sorted_posting_keys[i].upper() in self.inverted_idx.keys():
+                                to_add = sorted_posting_keys[i].upper()
+                            else:
+                                to_add = sorted_posting_keys[i]
+                            self.inverted_idx[to_add][3].append(self.file_line_indexes[curr_char])
+                            self.file_line_indexes[curr_char] += 1
                             i += 1
                         else:
                             i += 1

@@ -18,6 +18,7 @@ class Ranker:
         :param relevant_doc: dictionary of documents that contains at least one term from the query.
         :return: sorted list of documents by score
         """
+        #for each element
 
 
 
