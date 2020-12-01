@@ -230,12 +230,12 @@ def search_and_rank_query(query, inverted_index, k, output_path):
 
 def main(corpus_path, output_path):  # , stemming, queries, num_docs_to_retrieve):
 
-    start_time = time.time()
-
-    run_engine(corpus_path, output_path)  # , stemming, queries, num_docs_to_retrieve)
-
-    end_time = time.time()
-    print("--- %s seconds ---" % (end_time - start_time))
+    # start_time = time.time()
+    #
+    # run_engine(corpus_path, output_path)  # , stemming, queries, num_docs_to_retrieve)
+    #
+    # end_time = time.time()
+    # print("--- %s seconds ---" % (end_time - start_time))
 
     query = input("Please enter a query: ")
     k = int(input("Please enter number of docs to retrieve: "))

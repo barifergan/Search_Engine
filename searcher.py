@@ -33,7 +33,7 @@ class Searcher:
                 if term not in self.inverted_index.keys():
                     continue
                 else:
-                    dict_of_doc_ids = self.extract_from_posting_file(term, self.inverted_index[term][3], self.path)
+                    dict_of_doc_ids = self.extract_from_posting_file(term, self.inverted_index[term][1], self.path)
                     key = [*dict_of_doc_ids][0]
                     terms[term] = dict_of_doc_ids[key][0]
                     for doc in terms[term]:
@@ -52,35 +52,33 @@ class Searcher:
             except:
                 print('term {} not found in posting'.format(term))
 
-        idf = []
-        for word in query:
-            dfi = self.inverted_index[word]
-            idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
-            for doc in docs_content.keys():
-                exist = False
-                for pair in docs_content[doc]:
-                    if word == pair[0]:
-                        relevant_docs[doc].append(pair[1])
-                        exist = True
-                if not exist:
-                    relevant_docs[doc].append(0)
+        try:
+            idf = []
+            for word in query:
+                # calculate idf of each element in the vector
+                dfi = self.inverted_index[word][0]
+                idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
+                for doc in docs_content.keys():
+                    exist = False
+                    for pair in docs_content[doc]:
+                        if word == pair[0]:
+                            relevant_docs[doc].append(pair[1])
+                            exist = True
+                    if not exist:
+                        relevant_docs[doc].append(0)
 
-        # divide each element in the vector by thr max(f) of the doc. the information in docs_dict
-
-        with open(output_path + '\\' + 'docs_dict.json') as f:
-            for line in f:
-                j_content = json.loads(line)
-                key = [*j_content][0]
-                if key in relevant_docs.keys():
-                    max_tf = j_content[key][0]
-                    relevant_docs[key] = np.divide(relevant_docs[key], max_tf)
-                    relevant_docs[key] = np.multiply(relevant_docs[key], idf)
-
-        # calculate idf of each element in the vector (idf is log2(number of docs in the corpus \ df(from inverted index)
-
-        # multiply tf*idf of each element
-
-        # return relevant docs
+            with open(output_path + '\\' + 'docs_dict.json') as f:
+                for line in f:
+                    j_content = json.loads(line)
+                    key = [*j_content][0]
+                    if key in relevant_docs.keys():
+                        max_tf = j_content[key][0]
+                        # divide each element in the vector by the max(f) of the doc. the information in docs_dict
+                        relevant_docs[key] = np.divide(relevant_docs[key], max_tf)
+                        # multiply tf*idf of each element
+                        relevant_docs[key] = np.multiply(relevant_docs[key], idf)
+        except:
+            print('term {} not found in inverted index'.format(term))
 
         return relevant_docs
 
