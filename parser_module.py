@@ -268,7 +268,7 @@ class Parse:
     # url
     def parse_url(self, token):
 
-        url_parts = re.split('/|[{]|}|[*]|://|:|=|"|-|[?]|#|[$]', token)
+        url_parts = re.split('/|[{]|}|[*]|%|://|:|=|"|-|[?]|#|[$]', token)
 
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
