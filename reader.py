@@ -1,10 +1,17 @@
 import os
+
+import glob2
 import pandas as pd
 
 
 class ReadFile:
     def __init__(self, corpus_path):
         self.corpus_path = corpus_path
+
+    def read_folder(self, folder_name):
+        files_in_folder = glob2.glob(folder_name + '/**/*.parquet')
+        df = pd.concat(pd.read_parquet(fp, engine="pyarrow") for fp in files_in_folder)
+        return df.values.tolist()
 
     def read_file(self, file_name):
         """
@@ -32,4 +39,3 @@ class ReadFile:
         full_path = os.path.join(self.corpus_path, file_name)
         df = pd.read_parquet(full_path, engine="pyarrow")
         return df.values.tolist()
-        # return
