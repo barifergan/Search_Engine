@@ -32,8 +32,3 @@ class ReadFile:
             # print(df.values.tolist())
             return df.values.tolist()
         return
-
-
-corpus_path1 = "C:\\Users\\barif\\PycharmProjects\\Search_Engine\\Data"
-read = ReadFile(corpus_path1)
-path1 = read.read_file('covid19_07-11.snappy.parquet')

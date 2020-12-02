@@ -112,11 +112,3 @@ class Searcher:
                         break
                 lines_counter += 1
         return dict_to_return
-
-
-    # def extend_query(self, query):
-    #
-    #
-    #
-    #
-    #     return extented_query

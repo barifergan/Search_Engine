@@ -104,9 +104,10 @@ class Parse:
         symbols = '.,...,:;{}()[]"*?!&$-_/\''
         text_tokens_without_stopwords = [w for w in text_tokens if
                                          w.lower() not in self.stop_words and w not in symbols]
-        all_upper = True
-        j = 0
 
+        all_upper = True
+        # seperate -
+        j = 0
         while j < len(text_tokens_without_stopwords):
             if not text_tokens_without_stopwords[j].isupper():
                 all_upper = False
@@ -125,44 +126,37 @@ class Parse:
 
         i = 0
 
-        covid = ['COVID', 'COVID19', 'COVID-19', 'CORONAVIRUS']
+        covid = ['COVID', 'COVID19', 'CORONAVIRUS', 'CORONA']
         while i < len(text_tokens_without_stopwords):
-            parsed = False  # if parsed according one of the roles
-
+            # covid rule
             if text_tokens_without_stopwords[i].upper() in covid:
-                if i < len(text_tokens_without_stopwords) - 1 and text_tokens_without_stopwords[i + 1] == '19':
+                if i < len(text_tokens_without_stopwords) - 1 and (text_tokens_without_stopwords[i + 1] == '19' or
+                                                                   text_tokens_without_stopwords[i + 1].upper() == 'VIRUS'):
                     i += 1
-                i += 1
                 after_parse.append('COVID19')
-                continue
 
             # hashtag
             elif text_tokens_without_stopwords[i][0] == '#':
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
                 after_parse.extend(hashtag)
-                parsed = True
 
             # tagging
             elif text_tokens_without_stopwords[i][0] == '@':
                 tag = self.parse_tagging(text_tokens_without_stopwords[i])
                 after_parse.append(tag)
-                parsed = True
 
             # url
             elif 'http' in text_tokens_without_stopwords[i]:
                 url = self.parse_url(text_tokens_without_stopwords[i])
                 after_parse.extend(url)
-                parsed = True
 
             # percent
-            elif i < len(text_tokens_without_stopwords) - 2:
-                if text_tokens_without_stopwords[i + 1] == 'percent' or text_tokens_without_stopwords[
-                    i + 1] == 'percentage' or text_tokens_without_stopwords[i + 1] == '%':
-                    percentage = self.parse_percentages(text_tokens_without_stopwords[i])
-                    after_parse.append(percentage)
-                    parsed = True
-                    i +=2
-                    continue
+            elif (i < len(text_tokens_without_stopwords) - 2 and (text_tokens_without_stopwords[i + 1] == 'percent' or
+                        text_tokens_without_stopwords[i + 1] == 'percentage')) or text_tokens_without_stopwords[i][-1] == '%':
+                if not text_tokens_without_stopwords[i][-1] == '%':
+                    i += 1
+                percentage = self.parse_percentages(text_tokens_without_stopwords[i])
+                after_parse.append(percentage)
 
             # numbers
             elif text_tokens_without_stopwords[i].replace(',', '').replace('.', '', 1).isdigit():
@@ -175,22 +169,22 @@ class Parse:
                     number = self.parse_numbers(curr_num, '')
                 else:
                     number = self.parse_numbers(curr_num, text_tokens_without_stopwords[i + 1])
+                    if text_tokens_without_stopwords[i + 1].lower() == 'thousand' or text_tokens_without_stopwords[i + 1].lower() == \
+                            'million' or text_tokens_without_stopwords[i + 1].lower() == 'billion':
+                        i += 1
 
                 after_parse.append(number)
-                parsed = True
 
             elif all_upper:
                 after_parse.append(text_tokens_without_stopwords[i])
-                parsed = True
 
             # names and entities
-            if text_tokens_without_stopwords[i][0].isupper():
+            elif text_tokens_without_stopwords[i][0].isupper():
                 names_and_entities = self.parse_names_and_entities(text_tokens_without_stopwords[i:])
                 after_parse.append(names_and_entities[0])
                 i += names_and_entities[1] - 1
-                parsed = True
 
-            if parsed is False:
+            else:
                 after_parse.append(text_tokens_without_stopwords[i])
 
             i += 1
@@ -300,11 +294,11 @@ class Parse:
     def parse_numbers(self, number, next_word):
         num = ''
         if number < 1000:
-            if next_word == "Thousand" or next_word == "thousand":
+            if next_word.lower() == "thousand":
                 num = str(number) + 'K'
-            elif next_word == "Million" or next_word == "million":
+            elif next_word.lower() == "million":
                 num = str(number) + 'M'
-            elif next_word == "Billion" or next_word == "billion":
+            elif next_word.lower() == "billion":
                 num = str(number) + 'B'
             elif (next_word.replace('/', '').isdigit()) & ('/' in next_word):
                 num = str(number) + " " + next_word
@@ -312,7 +306,7 @@ class Parse:
                 num = str(number)
 
         elif 1000 <= number < 1000000:
-            if next_word == "Million":
+            if next_word.lower() == "million":
                 curr_num = math.floor((number / 1000) * 10 ** 3) / 10 ** 3
                 num = str(curr_num) + 'B'
             else:
@@ -347,13 +341,13 @@ class Parse:
 # text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
 # text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
 # text3 = 'this is @Ronen and @Bar'
-# text4 = '6% 106 percent 10.6 percentage'
-# # text5 = '1000 Million 204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
+# text4 = ['6%', '106 percent', '10.6 percentage']
+# text5 = '1000 Million 204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
 # text6 = ['Alexandria', 'Ocasio-cortez', 'is', 'Doctor Cortez']
 # parse1 = Parse()
-# # # parse1.parse_hashtags(text1)
-# # parse1.parse_url(text2)
-# # parse1.parse_tagging(text3)
-# # parse1.parse_precentages(text4)
-# # parse1.parse_numbers(text5)
+# parse1.parse_hashtags(text1)
+# parse1.parse_url(text2)
+# parse1.parse_tagging(text3)
+# parse1.parse_percentages(text4)
+# parse1.parse_numbers(text5)
 # parse1.parse_names_and_entities(text6)
