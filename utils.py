@@ -21,6 +21,11 @@ def load_obj(name):
     with open(name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
-def load_inverted_index(path):
-    with open(path + '.pkl', 'rb') as f:
-        return pickle.load(f)
+def load_inverted_index():
+    name = 'inverted_idx.pkl'
+    with open(name, 'rb') as f:
+        inverted_idx = pickle.load(f)
+    only_keys_and_terms = {}
+    for key, value in inverted_idx.items():
+        only_keys_and_terms[key] = value[0]
+    return only_keys_and_terms

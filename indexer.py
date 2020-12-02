@@ -30,7 +30,6 @@ class Indexer:
         :param document: a document need to be indexed.
         :return: -
         """
-
         self.postingDict = {}
         self.docs_dict = {}
         for d in documents:
@@ -126,6 +125,7 @@ class Indexer:
             for key in self.docs_dict.keys():
                 json.dump({key: self.docs_dict[key]}, outfile)
                 outfile.write('\n')
+
 
         sorted_posting_keys = sorted(self.postingDict.keys(), key=lambda x: x.lower())
 

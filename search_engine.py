@@ -1,22 +1,15 @@
-import collections
-import json
 import os
-import pickle
 import time
 
 import utils
-from reader import ReadFile
 from configuration import ConfigClass
-from parser_module import Parse
 from indexer import Indexer
+from parser_module import Parse
+from reader import ReadFile
 from searcher import Searcher
-from global_method import GlobalMethod
-import numpy as np
 
 
-
-
-def run_engine():  # , stemming, queries, num_docs_to_retrieve):
+def run_engine(stemming):
     """
 
     :return:
@@ -25,7 +18,7 @@ def run_engine():  # , stemming, queries, num_docs_to_retrieve):
 
     config = ConfigClass()
     r = ReadFile(ConfigClass.get__corpusPath())
-    p = Parse()
+    p = Parse(stemming)
     indexer = Indexer(config)
     names_and_entities = {}
 
@@ -59,7 +52,7 @@ def run_engine():  # , stemming, queries, num_docs_to_retrieve):
                                 exist_in_doc = True
 
                     parsed_documents.append(parsed_document)
-                    limit_to_index = 10000
+                    limit_to_index = 100000
                     if len(parsed_documents) == limit_to_index:
                         indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                                             counter_check)
@@ -85,15 +78,13 @@ def load_index():
     return inverted_index
 
 
-def search_and_rank_query(query, inverted_index, k):
-    if query is list:
-        query = ' '.join(query)
+def search_and_rank_query(query, inverted_index, k, stemming):
 
     num_of_docs_in_corpus = 10000000
 
-    p = Parse()
+    p = Parse(stemming)
     query_as_list = p.parse_sentence(query)
-    searcher = Searcher(inverted_index)
+    searcher = Searcher(inverted_index, stemming)
     # matrix = GlobalMethod.build_matrix()
     # for key, value in matrix.items():
     #     print(key, ' : ', value)
@@ -103,21 +94,28 @@ def search_and_rank_query(query, inverted_index, k):
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
-def main(corpus_path, output_path, stemming):  # queries, num_docs_to_retrieve):
+def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
 
-    start_time = time.time()
+    # start_time = time.time()
 
-    run_engine()  # , stemming, queries, num_docs_to_retrieve)
+    run_engine(stemming)
 
-    ConfigClass.set__corpusPath(corpus_path)
-    ConfigClass.set__outputPath(output_path)
-    ConfigClass.set__toStem(stemming)
+    # ConfigClass.set__corpusPath(corpus_path)
+    # ConfigClass.set__outputPath(output_path)
+    # ConfigClass.set__toStem(stemming)
 
-    end_time = time.time()
-    print("--- %s seconds ---" % (end_time - start_time))
+    # end_time = time.time()
+    # print("--- %s seconds ---" % (end_time - start_time))
 
-    query = input("Please enter a query: ")
-    k = int(input("Please enter number of docs to retrieve: "))
     inverted_index = load_index()
-    for doc_tuple in search_and_rank_query(query, inverted_index, k):
-        print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+
+    if isinstance(queries, list):
+        for query in queries:
+            for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming):
+                print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+
+    else:
+        with open(queries) as f:
+            for line in f:
+                for doc_tuple in search_and_rank_query(line, inverted_index, num_docs_to_retrieve, stemming):
+                    print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))

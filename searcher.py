@@ -11,11 +11,11 @@ import utils
 
 class Searcher:
 
-    def __init__(self, inverted_index):
+    def __init__(self, inverted_index, stemming):
         """
         :param inverted_index: dictionary of inverted index
         """
-        self.parser = Parse()
+        self.parser = Parse(stemming)
         self.ranker = Ranker()
         self.inverted_index = inverted_index
         self.output_path = ConfigClass.get__outputPath()

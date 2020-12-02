@@ -10,8 +10,9 @@ import math
 
 class Parse:
 
-    def __init__(self):
+    def __init__(self, stem):
         self.stop_words = stopwords.words('english')
+        self.stemming = stem
 
     def parse_doc(self, doc_as_list):
         """
@@ -189,8 +190,8 @@ class Parse:
             i += 1
 
         while '' in after_parse: after_parse.remove('')
-        #-------------------------------------------------------#TODO: stemmer here
-        if ConfigClass.get__toStem():
+
+        if self.stemming:
             after_stem = []
             for token in after_parse:
                 after_stem.append(stemmer.stem_term(token))
