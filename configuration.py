@@ -1,8 +1,8 @@
 
 class ConfigClass(object):
 
-    corpusPath = 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\Data'
-    outputPath = 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\json_files'
+    corpusPath = 'C:\\Users\\ronen\\PycharmProjects\\Search_Engine\\testData'
+    outputPath = 'C:\\Users\\ronen\\PycharmProjects\\Search_Engine\\json_files'
     savedFileMainFolder = ''
     saveFilesWithStem = savedFileMainFolder + "/WithStem"
     saveFilesWithoutStem = savedFileMainFolder + "/WithoutStem"
