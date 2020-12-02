@@ -60,13 +60,13 @@ class Indexer:
                                     if temp_term in self.waiting_list.keys():
                                         self.inverted_idx[temp_term][0] += 1
                                         self.postingDict[temp_term].append(
-                                            (self.waiting_list[temp_term][0], self.waiting_list[temp_term][1]))
+                                            (self.waiting_list[temp_term][0], self.waiting_list[temp_term][1], self.waiting_list[temp_term][2]))
                                         del (self.waiting_list[temp_term])
                                 else:
                                     temp_term = term
                                     self.inverted_idx[temp_term][0] += 1
                             else:
-                                self.waiting_list[term] = (d.tweet_id, document_dictionary[term])
+                                self.waiting_list[term] = (d.tweet_id, document_dictionary[term], index_in_text)
 
                         # regular word
                         elif term.lower() in self.inverted_idx.keys():
@@ -110,7 +110,7 @@ class Indexer:
                             self.postingDict[temp_term] = []
 
                     if temp_term in self.postingDict.keys():
-                        self.postingDict[temp_term].append((d.tweet_id, document_dictionary[term]))
+                        self.postingDict[temp_term].append((d.tweet_id, document_dictionary[term], index_in_text))
                     term_num_check += 1
                 except:
                     print('problem with the following key {}'.format(term))
