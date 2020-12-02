@@ -178,36 +178,6 @@ def run_engine(corpus_path, output_path):  # , stemming, queries, num_docs_to_re
 # print("--- %s seconds ---" % (end_time - start_time))
 
 
-def extract_from_posting_file(term, rows_num, output_path):
-    if term[0].isalpha():
-        file_name = term[0]
-    elif term[0] == '#':
-        file_name = 'hashtag'
-    elif term[0] == '@':
-        file_name = 'tagging'
-    elif term[0].isdigit():
-        file_name = 'number'
-    else:
-        file_name = 'other'
-
-    with open(output_path + '\\' + file_name + '.json') as f:
-        lines_counter = 1
-        dict_to_return = {}
-        for line in f:
-            if lines_counter == rows_num[0]:
-                j_content = json.loads(line)
-                key = [*j_content][0]
-                val = j_content[key]
-                if key not in dict_to_return:
-                    dict_to_return[key] = []
-
-                dict_to_return[key].append(val)
-                rows_num.remove(rows_num[0])
-
-                if not rows_num:
-                    break
-            lines_counter += 1
-    return dict_to_return
 
 def load_index():
     print('Load inverted index')

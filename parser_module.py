@@ -196,6 +196,7 @@ class Parse:
             i += 1
 
         while '' in after_parse: after_parse.remove('')
+        #-------------------------------------------------------#TODO: stemmer here
         return after_parse
 
     # hashtags
