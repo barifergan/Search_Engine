@@ -54,18 +54,21 @@ class Searcher:
             except:
                 print('term {} not found in posting'.format(term))
 
-        idf = []
-        for word in query:
-            dfi = self.inverted_index[word][0]
-            idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
-            for doc in docs_content.keys():
-                exist = False
-                for pair in docs_content[doc]:
-                    if word == pair[0]:
-                        relevant_docs[doc].append(pair[1])
-                        exist = True
-                if not exist:
-                    relevant_docs[doc].append(0)
+        try:
+            idf = []
+            for word in query:
+                dfi = self.inverted_index[word][0]
+                idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
+                for doc in docs_content.keys():
+                    exist = False
+                    for pair in docs_content[doc]:
+                        if word == pair[0]:
+                            relevant_docs[doc].append(pair[1])
+                            exist = True
+                    if not exist:
+                        relevant_docs[doc].append(0)
+        except:
+            print('term {} not found in inverted index'.format(term))
 
         # divide each element in the vector by thr max(f) of the doc. the information in docs_dict
 
@@ -116,11 +119,3 @@ class Searcher:
                         break
                 lines_counter += 1
         return dict_to_return
-
-
-    # def extend_query(self, query):
-    #
-    #
-    #
-    #
-    #     return extented_query
