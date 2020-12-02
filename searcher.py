@@ -1,5 +1,6 @@
 import json
 import math
+import pickle
 
 import numpy as np
 
@@ -11,11 +12,11 @@ import utils
 
 class Searcher:
 
-    def __init__(self, inverted_index, stemming):
+    def __init__(self, inverted_index):
         """
         :param inverted_index: dictionary of inverted index
         """
-        self.parser = Parse(stemming)
+        self.parser = Parse()
         self.ranker = Ranker()
         self.inverted_index = inverted_index
         self.output_path = ConfigClass.get__outputPath()
@@ -68,11 +69,11 @@ class Searcher:
                     if not exist:
                         relevant_docs[doc].append(0)
         except:
-            print('term {} not found in inverted index'.format(term))
+            print('term {} not found in inverted index'.format(word))
 
         # divide each element in the vector by thr max(f) of the doc. the information in docs_dict
 
-        with open(self.output_path + '\\' + 'docs_dict.json') as f:
+        with open('docs_dict.json', 'r') as f:
             for line in f:
                 j_content = json.loads(line)
                 key = [*j_content][0]

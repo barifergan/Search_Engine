@@ -10,9 +10,9 @@ import math
 
 class Parse:
 
-    def __init__(self, stem):
+    def __init__(self):
         self.stop_words = stopwords.words('english')
-        self.stemming = stem
+        self.stemming = ConfigClass.get__toStem()
 
     def parse_doc(self, doc_as_list):
         """

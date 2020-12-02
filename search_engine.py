@@ -1,6 +1,4 @@
-import os
 import time
-
 import utils
 from configuration import ConfigClass
 from indexer import Indexer
@@ -9,16 +7,13 @@ from reader import ReadFile
 from searcher import Searcher
 
 
-def run_engine(stemming):
-    """
+def run_engine():
 
-    :return:
-    """
     start_time = time.time()
 
     config = ConfigClass()
     r = ReadFile(ConfigClass.get__corpusPath())
-    p = Parse(stemming)
+    p = Parse()
     indexer = Indexer(config)
     names_and_entities = {}
 
@@ -54,7 +49,7 @@ def run_engine(stemming):
                     exist_in_doc = True
 
         parsed_documents.append(parsed_document)
-        limit_to_index = 500000
+        limit_to_index = 100000
         if len(parsed_documents) == limit_to_index:
             indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                                 counter_check)
@@ -62,6 +57,14 @@ def run_engine(stemming):
             counter_check += 1
             parsed_documents = []
             num_of_docs_in_corpus += limit_to_index
+
+    if len(parsed_documents) > 0:
+        indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
+                            counter_check)
+        print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
+        counter_check += 1
+        parsed_documents = []
+        num_of_docs_in_corpus += limit_to_index
 
     print('Finished parsing and indexing. Starting to export files')
 
@@ -77,13 +80,13 @@ def load_index():
     return inverted_index
 
 
-def search_and_rank_query(query, inverted_index, k, stemming):
+def search_and_rank_query(query, inverted_index, k):
 
     num_of_docs_in_corpus = 10000000
 
-    p = Parse(stemming)
+    p = Parse()
     query_as_list = p.parse_sentence(query)
-    searcher = Searcher(inverted_index, stemming)
+    searcher = Searcher(inverted_index)
     # matrix = GlobalMethod.build_matrix()
     # for key, value in matrix.items():
     #     print(key, ' : ', value)
@@ -96,12 +99,17 @@ def search_and_rank_query(query, inverted_index, k, stemming):
 def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
 
     # start_time = time.time()
-
-    run_engine(stemming)
-
+    # if stemming:
+    #     ConfigClass.set__outputPath(ConfigClass.saveFilesWithStem)
+    # else:
+    #      ConfigClass.set__outputPath(ConfigClass.saveFilesWithoutStem)
     ConfigClass.set__corpusPath(corpus_path)
     ConfigClass.set__outputPath(output_path)
     ConfigClass.set__toStem(stemming)
+
+    run_engine()
+
+
 
     # end_time = time.time()
     # print("--- %s seconds ---" % (end_time - start_time))
@@ -110,11 +118,11 @@ def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
 
     if isinstance(queries, list):
         for query in queries:
-            for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve, stemming):
+            for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve):
                 print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
 
     else:
         with open(queries) as f:
             for line in f:
-                for doc_tuple in search_and_rank_query(line, inverted_index, num_docs_to_retrieve, stemming):
+                for doc_tuple in search_and_rank_query(line, inverted_index, num_docs_to_retrieve):
                     print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))

@@ -1,7 +1,10 @@
 import json
+from configuration import ConfigClass
 from string import ascii_lowercase
 
 from nltk.corpus import stopwords
+
+import utils
 
 
 class Indexer:
@@ -14,14 +17,20 @@ class Indexer:
         self.waiting_list = {}
         self.file_line_indexes = {}
         self.docs_dict = {}
+        # utils.save_json('docs_dict')
         self.stop_words = stopwords.words('english')
         self.num_of_docs_in_corpus = 0
         for c in ascii_lowercase:
             self.file_line_indexes[c] = 1
+            # utils.save_json(ConfigClass.get__outputPath() + '\\' + c)
         self.file_line_indexes['hashtag'] = 1
+        # utils.save_json(ConfigClass.get__outputPath() + '\\hashtag')
         self.file_line_indexes['tagging'] = 1
+        # utils.save_json(ConfigClass.get__outputPath() + '\\tagging')
         self.file_line_indexes['number'] = 1
+        # utils.save_json(ConfigClass.get__outputPath() + '\\number')
         self.file_line_indexes['other'] = 1
+        # utils.save_json(ConfigClass.get__outputPath() + '\\other')
 
     def add_new_doc(self, documents, names_dict, output_path, counter_check):
         """
@@ -121,11 +130,11 @@ class Indexer:
                 self.docs_dict[d.tweet_id] = (
                     document_dictionary[max(document_dictionary, key=document_dictionary.get)], d.tweet_date, count_unique_words)
 
-        with open(output_path + '\\' + 'docs_dict' + '.json', 'a') as outfile:
+        with open('docs_dict.json', 'a') as outfile:
             for key in self.docs_dict.keys():
                 json.dump({key: self.docs_dict[key]}, outfile)
                 outfile.write('\n')
-
+        # pickle.dump(self.docs_dict, open('docs_dict.pkl', "wb"))
 
         sorted_posting_keys = sorted(self.postingDict.keys(), key=lambda x: x.lower())
 
