@@ -4,13 +4,16 @@ import os
 import pickle
 import time
 
+import utils
 from reader import ReadFile
 from configuration import ConfigClass
 from parser_module import Parse
 from indexer import Indexer
 from searcher import Searcher
-import utils
+from global_method import GlobalMethod
 import numpy as np
+
+
 
 
 def run_engine():  # , stemming, queries, num_docs_to_retrieve):
@@ -26,11 +29,11 @@ def run_engine():  # , stemming, queries, num_docs_to_retrieve):
     indexer = Indexer(config)
     names_and_entities = {}
 
-# --------------------------------------------------------------start here-------------------------------------------------------------------------
     corpus_path = ConfigClass.get__corpusPath()
     parsed_documents = []
     counter_check = 1
     num_of_docs_in_corpus = 0
+
     for subdir, dirs, files in os.walk(corpus_path):
         for file in files:
             file_type = file[-8:]
@@ -56,9 +59,10 @@ def run_engine():  # , stemming, queries, num_docs_to_retrieve):
                                 exist_in_doc = True
 
                     parsed_documents.append(parsed_document)
-                    limit_to_index = 10000
+                    limit_to_index = 1000000
                     if len(parsed_documents) == limit_to_index:
-                        indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(), counter_check)
+                        indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
+                                            counter_check)
                         print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
                         counter_check += 1
                         parsed_documents = []
@@ -71,6 +75,8 @@ def run_engine():  # , stemming, queries, num_docs_to_retrieve):
 
     end_parse_index_time = time.time()
     print("--- %s seconds ---" % (end_parse_index_time - start_time))
+
+
 # --------------------------------------------------------------end here-------------------------------------------------------------------------
 
 def load_index():
@@ -80,23 +86,30 @@ def load_index():
 
 
 def search_and_rank_query(query, inverted_index, k):
+    if query is list:
+        query = ' '.join(query)
 
     num_of_docs_in_corpus = 10000000
 
     p = Parse()
     query_as_list = p.parse_sentence(query)
-
     searcher = Searcher(inverted_index)
+
+    # query_as_list = GlobalMethod.expand_query(query_as_list)
     relevant_docs = searcher.relevant_docs_from_posting(query_as_list, num_of_docs_in_corpus)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
-def main(corpus_path, output_path, stemming): # queries, num_docs_to_retrieve):
+def main(corpus_path, output_path, stemming):  # queries, num_docs_to_retrieve):
 
     start_time = time.time()
 
     run_engine()  # , stemming, queries, num_docs_to_retrieve)
+
+    ConfigClass.set__corpusPath(corpus_path)
+    ConfigClass.set__outputPath(output_path)
+    ConfigClass.set__toStem(stemming)
 
     end_time = time.time()
     print("--- %s seconds ---" % (end_time - start_time))

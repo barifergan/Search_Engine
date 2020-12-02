@@ -2,6 +2,8 @@ from nltk import RegexpTokenizer, TweetTokenizer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from document import Document
+from configuration import ConfigClass
+from stemmer import Stemmer
 import re
 import math
 
@@ -32,11 +34,7 @@ class Parse:
         retweet_quote_url = doc_as_list[12]
         retweet_quote_indices = doc_as_list[13]
         term_dict = {}
-        # TODO: decide what exactly to enter into the text to parse, so we get the most relevant information
-        # if quote_url is None and quote_text is None:
-        #     text_to_tokenize = full_text + ' ' + url
-        # else:
-        #     text_to_tokenize = full_text + ' ' + url + ' ' + ' ' + quote_text + ' ' + quote_url
+
 
         # url to parse:
         if url == '{}' or url is None:
@@ -98,6 +96,7 @@ class Parse:
         # text_tokens = space_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
         after_parse = []
         # tokenizer:
+        stemmer = Stemmer()
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
 
@@ -191,7 +190,13 @@ class Parse:
 
         while '' in after_parse: after_parse.remove('')
         #-------------------------------------------------------#TODO: stemmer here
-        return after_parse
+        if ConfigClass.get__toStem():
+            after_stem = []
+            for token in after_parse:
+                after_stem.append(stemmer.stem_term(token))
+            return after_stem
+        else:
+            return after_parse
 
     # hashtags
     def parse_hashtags(self, token):

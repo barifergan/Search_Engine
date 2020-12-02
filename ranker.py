@@ -17,8 +17,9 @@ class Ranker:
             sum_wij = sum(relevant_doc[doc])
             sum_wij2 = sum([x**2 for x in relevant_doc[doc]])
             sum_wiq2 = len(relevant_doc[doc])
-            cos_sim = sum_wij / math.sqrt(sum_wij2 * sum_wiq2)
-            results[doc] = cos_sim
+            if sum_wij2 != 0:
+                cos_sim = sum_wij / math.sqrt(sum_wij2 * sum_wiq2)
+                results[doc] = cos_sim
 
         return sorted(results.items(), key=lambda item: item[1], reverse=True)
 
@@ -30,4 +31,5 @@ class Ranker:
         :param k: Number of top document to return
         :return: list of relevant document
         """
+
         return sorted_relevant_doc[:k]

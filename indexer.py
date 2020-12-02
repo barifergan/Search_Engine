@@ -45,7 +45,7 @@ class Indexer:
             for term in document_dictionary.keys():
                 try:  # Update inverted index and posting
                     temp_term = ''
-                    index_in_text = d.full_text.find(term)
+                    index_in_text = [n for n, x in enumerate(d.full_text.split()) if x == term]
                     if document_dictionary[term] == 1:  # save the amount of unique words in document
                         count_unique_words += 1
                     # first char is uppercase

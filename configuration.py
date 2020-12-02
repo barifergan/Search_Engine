@@ -1,7 +1,7 @@
 
 class ConfigClass(object):
 
-    corpusPath = 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\Data\\date=07-27-2020'
+    corpusPath = 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\Data'
     outputPath = 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\json_files'
     savedFileMainFolder = ''
     saveFilesWithStem = savedFileMainFolder + "/WithStem"
@@ -9,6 +9,11 @@ class ConfigClass(object):
     toStem = False
 
     print('Project was created successfully..')
+
+
+    @classmethod
+    def set__corpusPath(cls, corpus_path):
+        cls.corpusPath = corpus_path
 
     @classmethod
     def get__corpusPath(cls):
@@ -19,9 +24,16 @@ class ConfigClass(object):
         return cls.outputPath
 
     @classmethod
-    def to_stem(cls):
+    def set__outputPath(cls, output_path):
+        cls.outputPathPath = output_path
+
+    @classmethod
+    def get__toStem(cls):
         return cls.toStem
 
+    @classmethod
+    def set__toStem(cls, to_stem):
+        cls.toStem = to_stem
 
 
     #
