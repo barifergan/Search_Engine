@@ -31,5 +31,6 @@ class Ranker:
         :param k: Number of top document to return
         :return: list of relevant document
         """
-
+        if k > 2000:
+            k = 2000
         return sorted_relevant_doc[:k]

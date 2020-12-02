@@ -343,17 +343,3 @@ class Parse:
             else:
                 return curr_name, i
         return curr_name, len(text)
-
-# text1 = '#virusIsBad #infection_blabla #animals \n\nhttps://t.co/NrBpYOp0dR'
-# text2 = 'https://www.instagram.com/p/CD7fAPWs3WM/?igshid=o9kf0ugp1l8x'
-# text3 = 'this is @Ronen and @Bar'
-# text4 = ['6%', '106 percent', '10.6 percentage']
-# text5 = '1000 Million 204 14.7 123,470.11 1.2 Million 10,123 1010.56 10,123,000 55 Million 10123000000 10,123,000,000 55 Billion '
-# text6 = ['Alexandria', 'Ocasio-cortez', 'is', 'Doctor Cortez']
-# parse1 = Parse()
-# parse1.parse_hashtags(text1)
-# parse1.parse_url(text2)
-# parse1.parse_tagging(text3)
-# parse1.parse_percentages(text4)
-# parse1.parse_numbers(text5)
-# parse1.parse_names_and_entities(text6)

@@ -17,7 +17,7 @@ def run_engine(stemming):
     start_time = time.time()
 
     config = ConfigClass()
-    r = ReadFile(ConfigClass.get__corpusPath())
+    # r = ReadFile(ConfigClass.get__corpusPath())
     p = Parse(stemming)
     indexer = Indexer(config)
     names_and_entities = {}
@@ -28,6 +28,7 @@ def run_engine(stemming):
     num_of_docs_in_corpus = 0
 
     for subdir, dirs, files in os.walk(corpus_path):
+        r = ReadFile(subdir)
         for file in files:
             file_type = file[-8:]
             if file_type == '.parquet':
@@ -52,7 +53,7 @@ def run_engine(stemming):
                                 exist_in_doc = True
 
                     parsed_documents.append(parsed_document)
-                    limit_to_index = 100000
+                    limit_to_index = 500000
                     if len(parsed_documents) == limit_to_index:
                         indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                                             counter_check)
@@ -64,13 +65,10 @@ def run_engine(stemming):
     print('Finished parsing and indexing. Starting to export files')
 
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
-    # utils.save_obj(indexer.postingDict, "posting")
 
     end_parse_index_time = time.time()
     print("--- %s seconds ---" % (end_parse_index_time - start_time))
 
-
-# --------------------------------------------------------------end here-------------------------------------------------------------------------
 
 def load_index():
     print('Load inverted index')
@@ -100,9 +98,9 @@ def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
 
     run_engine(stemming)
 
-    # ConfigClass.set__corpusPath(corpus_path)
-    # ConfigClass.set__outputPath(output_path)
-    # ConfigClass.set__toStem(stemming)
+    ConfigClass.set__corpusPath(corpus_path)
+    ConfigClass.set__outputPath(output_path)
+    ConfigClass.set__toStem(stemming)
 
     # end_time = time.time()
     # print("--- %s seconds ---" % (end_time - start_time))

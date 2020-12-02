@@ -22,7 +22,7 @@ if __name__ == '__main__':
         num_test_failed = 0
         results_summary = []
 
-        reader_inputs = [{'file': 'covid19_07-08.snappy.parquet', 'len': 262794}]
+        reader_inputs = [{'file': 'date=07-08-2020/covid19_07-08.snappy.parquet', 'len': 262794}]
 
         corpus_path = 'testData'
         output_path = 'posting'
