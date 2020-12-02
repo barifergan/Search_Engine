@@ -2,6 +2,8 @@ import json
 import math
 
 import numpy as np
+
+from configuration import ConfigClass
 from parser_module import Parse
 from ranker import Ranker
 import utils
@@ -9,16 +11,16 @@ import utils
 
 class Searcher:
 
-    def __init__(self, inverted_index, path):
+    def __init__(self, inverted_index):
         """
         :param inverted_index: dictionary of inverted index
         """
         self.parser = Parse()
         self.ranker = Ranker()
         self.inverted_index = inverted_index
-        self.path = path
+        self.output_path = ConfigClass.get__outputPath()
 
-    def relevant_docs_from_posting(self, query, output_path, num_of_docs_in_corpus):
+    def relevant_docs_from_posting(self, query, num_of_docs_in_corpus=10000000):
         """
         This function loads the posting list and count the amount of relevant documents per term.
         :param query: query
@@ -33,7 +35,7 @@ class Searcher:
                 if term not in self.inverted_index.keys():
                     continue
                 else:
-                    dict_of_doc_ids = self.extract_from_posting_file(term, self.inverted_index[term][1], self.path)
+                    dict_of_doc_ids = self.extract_from_posting_file(term, self.inverted_index[term][1])
                     key = [*dict_of_doc_ids][0]
                     terms[term] = dict_of_doc_ids[key][0]
                     for doc in terms[term]:
@@ -52,37 +54,39 @@ class Searcher:
             except:
                 print('term {} not found in posting'.format(term))
 
-        try:
-            idf = []
-            for word in query:
-                # calculate idf of each element in the vector
-                dfi = self.inverted_index[word][0]
-                idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
-                for doc in docs_content.keys():
-                    exist = False
-                    for pair in docs_content[doc]:
-                        if word == pair[0]:
-                            relevant_docs[doc].append(pair[1])
-                            exist = True
-                    if not exist:
-                        relevant_docs[doc].append(0)
+        idf = []
+        for word in query:
+            dfi = self.inverted_index[word][0]
+            idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
+            for doc in docs_content.keys():
+                exist = False
+                for pair in docs_content[doc]:
+                    if word == pair[0]:
+                        relevant_docs[doc].append(pair[1])
+                        exist = True
+                if not exist:
+                    relevant_docs[doc].append(0)
 
-            with open(output_path + '\\' + 'docs_dict.json') as f:
-                for line in f:
-                    j_content = json.loads(line)
-                    key = [*j_content][0]
-                    if key in relevant_docs.keys():
-                        max_tf = j_content[key][0]
-                        # divide each element in the vector by the max(f) of the doc. the information in docs_dict
-                        relevant_docs[key] = np.divide(relevant_docs[key], max_tf)
-                        # multiply tf*idf of each element
-                        relevant_docs[key] = np.multiply(relevant_docs[key], idf)
-        except:
-            print('term {} not found in inverted index'.format(term))
+        # divide each element in the vector by thr max(f) of the doc. the information in docs_dict
+
+        with open(self.output_path + '\\' + 'docs_dict.json') as f:
+            for line in f:
+                j_content = json.loads(line)
+                key = [*j_content][0]
+                if key in relevant_docs.keys():
+                    max_tf = j_content[key][0]
+                    relevant_docs[key] = np.divide(relevant_docs[key], max_tf)
+                    relevant_docs[key] = np.multiply(relevant_docs[key], idf)
+
+        # calculate idf of each element in the vector (idf is log2(number of docs in the corpus \ df(from inverted index)
+
+        # multiply tf*idf of each element
+
+        # return relevant docs
 
         return relevant_docs
 
-    def extract_from_posting_file(self, term, rows_num, output_path):
+    def extract_from_posting_file(self, term, rows_num):
         if term[0].isalpha():
             file_name = term[0]
         elif term[0] == '#':
@@ -94,7 +98,7 @@ class Searcher:
         else:
             file_name = 'other'
 
-        with open(output_path + '\\' + file_name + '.json') as f:
+        with open(self.output_path + '\\' + file_name + '.json') as f:
             lines_counter = 1
             dict_to_return = {}  # key: term, value:list of tweets id
             for line in f:
@@ -112,3 +116,11 @@ class Searcher:
                         break
                 lines_counter += 1
         return dict_to_return
+
+
+    # def extend_query(self, query):
+    #
+    #
+    #
+    #
+    #     return extented_query
