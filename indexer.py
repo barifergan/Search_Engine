@@ -145,7 +145,7 @@ class Indexer:
             if sorted_posting_keys[i][0].isalpha():
                 curr_char = sorted_posting_keys[i][0].lower()
                 with open(output_path + '\\' + curr_char + '.json', 'a') as outfile:
-                    while i < len(sorted_posting_keys):
+                    while i < len(sorted_posting_keys) and sorted_posting_keys[i][0].lower() == curr_char:
                         if sorted_posting_keys[i][0].lower() == curr_char:
                             json.dump({sorted_posting_keys[i]: self.postingDict[sorted_posting_keys[i]]}, outfile)
                             outfile.write('\n')
@@ -159,9 +159,9 @@ class Indexer:
                             self.inverted_idx[to_add][1].append(self.file_line_indexes[curr_char])
                             self.file_line_indexes[curr_char] += 1
                             i += 1
-                        else:
-                            i += 1
-                            break
+                        # else:
+                        #     i += 1
+                        #     break
             elif sorted_posting_keys[i][0] == '#':
                 with open((output_path + '\\hashtag.json'), 'a') as outfile:
                     while i < len(sorted_posting_keys) and sorted_posting_keys[i][0] == '#':

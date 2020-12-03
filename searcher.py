@@ -37,8 +37,7 @@ class Searcher:
                 if term not in self.inverted_index.keys():
                     continue
                 else:
-                    if not self.inverted_index[term][1] :
-                        dict_of_doc_ids = self.extract_from_posting_file(term, self.inverted_index[term][1])
+                    dict_of_doc_ids = self.extract_from_posting_file(term, self.inverted_index[term][1])
                     key = [*dict_of_doc_ids][0]
                     terms[term] = dict_of_doc_ids[key][0]
                     for doc in terms[term]:

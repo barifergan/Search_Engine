@@ -37,7 +37,6 @@ class Parse:
         retweet_quote_indices = doc_as_list[13]
         term_dict = {}
 
-
         # url to parse:
         if url == '{}' or url is None:
             if retweet_url == '{}' or retweet_url is None:
@@ -57,7 +56,6 @@ class Parse:
                 url_to_token = retweet_url[retweet_url.find('":"') + 3:]
         else:
             url_to_token = url[url.find('":"') + 3:]
-
 
         if 'http' in full_text:
             text_to_tokenize = full_text[0:full_text.find('http')]
@@ -108,7 +106,7 @@ class Parse:
                                          w.lower() not in self.stop_words and w not in symbols]
 
         all_upper = True
-        # seperate -
+        # separate -
         j = 0
         while j < len(text_tokens_without_stopwords):
             if not text_tokens_without_stopwords[j].isupper():
@@ -140,7 +138,7 @@ class Parse:
                 if i < len(text_tokens_without_stopwords) - 1 and (text_tokens_without_stopwords[i + 1] == '19' or
                                                                    text_tokens_without_stopwords[i + 1].upper() == 'VIRUS'):
                     i += 1
-                after_parse.append('COVID19')
+                after_parse.append('covid19')
 
             # hashtag
             elif text_tokens_without_stopwords[i][0] == '#':
