@@ -1,27 +1,40 @@
 import math
+import numpy as np
+from numpy import dot
+from numpy.linalg import norm
+
 
 class Ranker:
     def __init__(self):
         pass
 
     @staticmethod
-    def rank_relevant_doc(relevant_doc):
+    def rank_relevant_doc(relevant_docs, normalized_query_vec):
         """
         This function provides rank for each relevant document and sorts them by their scores.
         The current score considers solely the number of terms shared by the tweet (full_text) and query.
-        :param relevant_doc: dictionary of documents that contains at least one term from the query.
+        :param relevant_docs: dictionary of documents that contains at least one term from the query.
         :return: sorted list of documents by score
         """
-        results = {}
-        for doc in relevant_doc:
-            sum_wij = sum(relevant_doc[doc])
-            sum_wij2 = sum([x**2 for x in relevant_doc[doc]])
-            sum_wiq2 = len(relevant_doc[doc])
-            if sum_wij2 != 0:
-                cos_sim = sum_wij / math.sqrt(sum_wij2 * sum_wiq2)
-                results[doc] = cos_sim
+        for doc in relevant_docs:
+            ranked_results = {}
+            norm_docs = norm(relevant_docs[doc])
+            norm_query = norm(normalized_query_vec)
+            cos_sim = dot(relevant_docs[doc], normalized_query_vec) / (norm_docs * norm_query)
+            ranked_results[doc] = cos_sim
 
-        return sorted(results.items(), key=lambda item: item[1], reverse=True)
+        # results = {}
+        # for doc in relevant_docs:
+        #     sum_wij = sum(relevant_docs[doc])
+        #     sum_wij2 = sum([x ** 2 for x in relevant_docs[doc]])
+        #     sum_wiq2 = len(relevant_docs[doc])
+        #     if sum_wij2 != 0:
+        #         cos_sim = sum_wij / math.sqrt(sum_wij2 * sum_wiq2)
+        #         results[doc] = cos_sim
+
+        return sorted(ranked_results.items(), key=lambda item: item[1], reverse=True)
+
+        # sorted_ranked_docs = {k: v for k, v in sorted(ranked_results.items(), key=lambda item: item[1], 1 /  reverse=True)
 
     @staticmethod
     def retrieve_top_k(sorted_relevant_doc, k=1):

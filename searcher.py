@@ -31,6 +31,7 @@ class Searcher:
         terms = {}  # key- term , value- (tweet id, fi)
         docs_content = {}
 
+        query_dict = {}  # to check how many times word appear in the query
         for term in query:
             try:
                 if term not in self.inverted_index.keys():
@@ -52,24 +53,45 @@ class Searcher:
                             if not exists:
                                 docs_content[doc[0]].append([term, doc[1]])
 
+                if term not in query_dict.keys():
+                    query_dict[term] = 1
+                else:
+                    query_dict[term] += 1
+
             except:
                 print('term {} not found in posting'.format(term))
 
-        try:
-            idf = []
-            for word in query:
-                dfi = self.inverted_index[word][0]
-                idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
+
+        idf = []
+        query_vec = []
+
+        for term in query_dict:
+            query_vec.append(query_dict[term])
+
+        print(query_dict)
+        mx = max(query_vec)
+        normalized_query = np.divide(query_vec, max(query_vec))
+        for word in query:
+            try:
+                if word in self.inverted_index.keys():
+                    dfi = self.inverted_index[word][0]
+                    idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
+                    # TODO: check the problem here!!!!!!!!!!!! (ValueError: shapes (10,) and (8,) not aligned: 10 (dim 0) != 8 (dim 0))
+                else:
+                    idf.append(0)
+
                 for doc in docs_content.keys():
                     exist = False
                     for pair in docs_content[doc]:
                         if word == pair[0]:
                             relevant_docs[doc].append(pair[1])
                             exist = True
+
                     if not exist:
                         relevant_docs[doc].append(0)
-        except:
-            print('term {} not found in inverted index'.format(word))
+
+            except:
+                print('term {} not found in inverted index'.format(word))
 
         # divide each element in the vector by thr max(f) of the doc. the information in docs_dict
 
@@ -88,7 +110,7 @@ class Searcher:
 
         # return relevant docs
 
-        return relevant_docs
+        return relevant_docs, normalized_query
 
     def extract_from_posting_file(self, term, rows_num):
         if term[0].isalpha():

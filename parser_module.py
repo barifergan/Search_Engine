@@ -12,6 +12,7 @@ class Parse:
 
     def __init__(self):
         self.stop_words = stopwords.words('english')
+        self.stop_words.append('u')
         self.stemming = ConfigClass.get__toStem()
 
     def parse_doc(self, doc_as_list):
@@ -56,6 +57,7 @@ class Parse:
                 url_to_token = retweet_url[retweet_url.find('":"') + 3:]
         else:
             url_to_token = url[url.find('":"') + 3:]
+
 
         if 'http' in full_text:
             text_to_tokenize = full_text[0:full_text.find('http')]
@@ -124,8 +126,13 @@ class Parse:
 
             j += 1
 
-        i = 0
+        if self.stemming:
+            after_stem = []
+            for token in text_tokens_without_stopwords:
+                after_stem.append(stemmer.stem_term(token))
+            text_tokens_without_stopwords = after_stem
 
+        i = 0
         covid = ['COVID', 'COVID19', 'CORONAVIRUS', 'CORONA']
         while i < len(text_tokens_without_stopwords):
             # covid rule
@@ -191,13 +198,7 @@ class Parse:
 
         while '' in after_parse: after_parse.remove('')
 
-        if self.stemming:
-            after_stem = []
-            for token in after_parse:
-                after_stem.append(stemmer.stem_term(token))
-            return after_stem
-        else:
-            return after_parse
+        return after_parse
 
     # hashtags
     def parse_hashtags(self, token):

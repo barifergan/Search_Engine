@@ -1,11 +1,12 @@
+import os
+
 
 class ConfigClass(object):
 
-    corpusPath = None  # 'C:\\Users\\ronen\\PycharmProjects\\Search_Engine\\testData'
-    outputPath = None  # 'C:\\Users\\ronen\\PycharmProjects\\Search_Engine\\json_files'
-    savedFileMainFolder = ''
-    saveFilesWithStem = savedFileMainFolder + "/WithStem"
-    saveFilesWithoutStem = savedFileMainFolder + "/WithoutStem"
+    corpusPath = None
+    outputPath = None
+    saveFilesWithStem = "/WithStem"
+    saveFilesWithoutStem = "/WithoutStem"
     toStem = False
 
     print('Project was created successfully..')
@@ -26,6 +27,8 @@ class ConfigClass(object):
     @classmethod
     def set__outputPath(cls, output_path):
         cls.outputPath = output_path
+        if not os.path.exists(output_path):
+            os.mkdir(output_path)
 
     @classmethod
     def get__toStem(cls):

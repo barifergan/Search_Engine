@@ -70,12 +70,12 @@ class GlobalMethod(object):
 
         for word in relevant_words:
             words_dict[word] = []
-            lines_in_file = inverted_idx[word][1]
+            lines_in_posting = inverted_idx[word][1] #all the lines that this word appear in posting file
 
-            posting_doc = extract_from_posting_file(word, lines_in_file, ConfigClass.get__outputPath())
+            posting_doc = extract_from_posting_file(word, lines_in_posting, ConfigClass.get__outputPath()) # 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\WithStem'
             words_dict[word] = posting_doc[word][0]
 
-            for key_word in relevant_words:
+            for key_word in words_dict.keys():
                 if key_word == word or key_word == word.upper() or key_word == word.lower():
                     cii = 0
                     for val in words_dict[key_word]:
@@ -87,7 +87,7 @@ class GlobalMethod(object):
                 else:
                     cij = 0
                     for val1 in words_dict[word]:
-                        for val2 in words_dict[word]:
+                        for val2 in words_dict[key_word]:
                             if val1[0] == val2[0]:
                                 cij += val1[1] * val2[1]
                         idx_i = relevant_words.index(key_word)
@@ -113,6 +113,6 @@ class GlobalMethod(object):
         return query.extend(expansion)
 
 
-matrix = GlobalMethod.build_matrix()
-for key, value in matrix.items():
-    print(key, ' : ', value)
+# matrix = GlobalMethod.build_matrix()
+# for key, value in matrix.items():
+#     print(key, ' : ', value)

@@ -1,10 +1,12 @@
 import time
 import utils
 from configuration import ConfigClass
+from global_method import GlobalMethod
 from indexer import Indexer
 from parser_module import Parse
 from reader import ReadFile
 from searcher import Searcher
+import pandas as pd
 
 
 def run_engine():
@@ -49,7 +51,7 @@ def run_engine():
                     exist_in_doc = True
 
         parsed_documents.append(parsed_document)
-        limit_to_index = 100000
+        limit_to_index = 10000
         if len(parsed_documents) == limit_to_index:
             indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                                 counter_check)
@@ -86,30 +88,30 @@ def search_and_rank_query(query, inverted_index, k):
 
     p = Parse()
     query_as_list = p.parse_sentence(query)
+    # print(query_as_list)
     searcher = Searcher(inverted_index)
     # matrix = GlobalMethod.build_matrix()
     # for key, value in matrix.items():
     #     print(key, ' : ', value)
     # query_as_list = GlobalMethod.expand_query(query_as_list)
-    relevant_docs = searcher.relevant_docs_from_posting(query_as_list, num_of_docs_in_corpus)
-    ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
+    relevant_docs, normalized_query = searcher.relevant_docs_from_posting(query_as_list, num_of_docs_in_corpus)
+    ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs, normalized_query)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
 def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
 
-    # start_time = time.time()
-    # if stemming:
-    #     ConfigClass.set__outputPath(ConfigClass.saveFilesWithStem)
-    # else:
-    #      ConfigClass.set__outputPath(ConfigClass.saveFilesWithoutStem)
+    start_time = time.time()
+    if stemming:
+        ConfigClass.set__outputPath(output_path + ConfigClass.saveFilesWithStem)
+    else:
+        ConfigClass.set__outputPath(output_path + ConfigClass.saveFilesWithoutStem)
+
     ConfigClass.set__corpusPath(corpus_path)
-    ConfigClass.set__outputPath(output_path)
+    # ConfigClass.set__outputPath(output_path)
     ConfigClass.set__toStem(stemming)
 
     run_engine()
-
-
 
     # end_time = time.time()
     # print("--- %s seconds ---" % (end_time - start_time))
@@ -117,12 +119,22 @@ def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
     inverted_index = load_index()
 
     if isinstance(queries, list):
+        line_number = 0
         for query in queries:
             for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve):
                 print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+                data_to_excel = pd.DataFrame({'query number': line_number}, {'tweet id': doc_tuple[0]},
+                                             {'Rank': doc_tuple[1]})
+                # data_to_excel.to_excel('csv_report.xlsx')
+            line_number += 1
 
     else:
-        with open(queries) as f:
-            for line in f:
-                for doc_tuple in search_and_rank_query(line, inverted_index, num_docs_to_retrieve):
-                    print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+        with open(queries, encoding="utf8") as f:
+            line_number = 0
+            for line in f.readlines():
+                if line != '\n':
+                    for doc_tuple in search_and_rank_query(line, inverted_index, num_docs_to_retrieve):
+                        print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
+                        data_to_excel = pd.DataFrame({'query number': line_number}, {'tweet id': doc_tuple[0]}, {'Rank': doc_tuple[1]})
+                        # data_to_excel.to_excel('csv report.xlsx')
+                    line_number += 1
