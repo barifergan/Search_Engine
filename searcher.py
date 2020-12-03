@@ -37,7 +37,8 @@ class Searcher:
                 if term not in self.inverted_index.keys():
                     continue
                 else:
-                    dict_of_doc_ids = self.extract_from_posting_file(term, self.inverted_index[term][1])
+                    if not self.inverted_index[term][1] :
+                        dict_of_doc_ids = self.extract_from_posting_file(term, self.inverted_index[term][1])
                     key = [*dict_of_doc_ids][0]
                     terms[term] = dict_of_doc_ids[key][0]
                     for doc in terms[term]:
@@ -71,24 +72,26 @@ class Searcher:
         print(query_dict)
         mx = max(query_vec)
         normalized_query = np.divide(query_vec, max(query_vec))
-        for word in query:
+        for word in query_dict.keys():
             try:
                 if word in self.inverted_index.keys():
                     dfi = self.inverted_index[word][0]
                     idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
                     # TODO: check the problem here!!!!!!!!!!!! (ValueError: shapes (10,) and (8,) not aligned: 10 (dim 0) != 8 (dim 0))
-                else:
-                    idf.append(0)
+                # else:
+                #     idf.append(0)
 
-                for doc in docs_content.keys():
-                    exist = False
-                    for pair in docs_content[doc]:
-                        if word == pair[0]:
-                            relevant_docs[doc].append(pair[1])
-                            exist = True
+                    for doc in docs_content.keys():
+                        exist = False
+                        for pair in docs_content[doc]:
+                            if word == pair[0]:
+                                relevant_docs[doc].append(pair[1])
+                                exist = True
 
-                    if not exist:
-                        relevant_docs[doc].append(0)
+                        if not exist:
+                            relevant_docs[doc].append(0)
+
+
 
             except:
                 print('term {} not found in inverted index'.format(word))
