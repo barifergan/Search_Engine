@@ -101,7 +101,7 @@ def search_and_rank_query(query, inverted_index, k):
 
 def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
 
-    start_time = time.time()
+    # start_time = time.time()
     if stemming:
         ConfigClass.set__outputPath(output_path + ConfigClass.saveFilesWithStem)
     else:

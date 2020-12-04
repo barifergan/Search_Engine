@@ -1,3 +1,4 @@
+import copy
 import json
 import math
 import pickle
@@ -34,29 +35,32 @@ class Searcher:
         query_dict = {}  # to check how many times word appear in the query
         for term in query:
             try:
-                if term not in self.inverted_index.keys():
+                if term.lower() in self.inverted_index.keys():
+                    temp_term = term.lower()
+                elif term.upper() not in self.inverted_index.keys():
+                    temp_term = term.upper()
+                else:
                     continue
-                else:
-                    dict_of_doc_ids = self.extract_from_posting_file(term, self.inverted_index[term][1])
-                    key = [*dict_of_doc_ids][0]
-                    terms[term] = dict_of_doc_ids[key][0]
-                    for doc in terms[term]:
-                        if doc[0] not in docs_content.keys():
-                            docs_content[doc[0]] = [[term, doc[1]]]
-                            relevant_docs[doc[0]] = []
-                        else:
-                            exists = False
-                            for pair in docs_content[doc[0]]:
-                                if pair[0] == term:
-                                    pair[1] += 1
-                                    exists = True
-                            if not exists:
-                                docs_content[doc[0]].append([term, doc[1]])
+                dict_of_doc_ids = self.extract_from_posting_file(temp_term, self.inverted_index[temp_term][1])
+                key = [*dict_of_doc_ids][0]
+                terms[temp_term] = dict_of_doc_ids[key][0]
+                for doc in terms[temp_term]:
+                    if doc[0] not in docs_content.keys():
+                        docs_content[doc[0]] = [[temp_term, doc[1]]]
+                        relevant_docs[doc[0]] = []
+                    else:
+                        exists = False
+                        for pair in docs_content[doc[0]]:
+                            if pair[0] == term:
+                                pair[1] += 1
+                                exists = True
+                        if not exists:
+                            docs_content[doc[0]].append([term, doc[1]])
 
-                if term not in query_dict.keys():
-                    query_dict[term] = 1
+                if temp_term not in query_dict.keys():
+                    query_dict[temp_term] = 1
                 else:
-                    query_dict[term] += 1
+                    query_dict[temp_term] += 1
 
             except:
                 print('term {} not found in posting'.format(term))
@@ -89,8 +93,6 @@ class Searcher:
 
                         if not exist:
                             relevant_docs[doc].append(0)
-
-
 
             except:
                 print('term {} not found in inverted index'.format(word))
@@ -126,11 +128,13 @@ class Searcher:
         else:
             file_name = 'other'
 
+        rows = copy.deepcopy(rows_num)
+
         with open(self.output_path + '\\' + file_name + '.json') as f:
             lines_counter = 1
             dict_to_return = {}  # key: term, value:list of tweets id
             for line in f:
-                if lines_counter == rows_num[0]:
+                if lines_counter == rows[0]:
                     j_content = json.loads(line)
                     key = [*j_content][0]
                     val = j_content[key]
@@ -138,9 +142,9 @@ class Searcher:
                         dict_to_return[key] = []
 
                     dict_to_return[key].append(val)
-                    rows_num.remove(rows_num[0])
+                    rows.remove(rows[0])
 
-                    if not rows_num:
+                    if not rows:
                         break
                 lines_counter += 1
         return dict_to_return

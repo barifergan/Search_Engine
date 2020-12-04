@@ -12,7 +12,7 @@ class Parse:
 
     def __init__(self):
         self.stop_words = stopwords.words('english')
-        self.stop_words.append('u')
+        self.stop_words.extend('https', 'http', 'rt', 'www', 't.co', 'u')
         self.stemming = ConfigClass.get__toStem()
 
     def parse_doc(self, doc_as_list):
@@ -143,6 +143,10 @@ class Parse:
             # hashtag
             elif text_tokens_without_stopwords[i][0] == '#':
                 hashtag = self.parse_hashtags(text_tokens_without_stopwords[i])
+                # for h in range(len(hashtag)):
+                #     if hashtag[h].upper() in covid:
+                #         hashtag.remove(hashtag[h])
+                #         hashtag.insert(h, 'covid19')
                 after_parse.extend(hashtag)
 
             # tagging
