@@ -126,13 +126,19 @@ class GlobalMethod(object):
 
         return cls.associations_matrix
 
-    @staticmethod
+    @classmethod
     def expand_query(cls, query):
+
+        with open('associations_matrix.pkl', 'rb') as matrix_from_file:
+            association_matrix = pickle.load(matrix_from_file)
         expansion = []
         for term in query:
-            lst = cls.associations_matrix[term]
+            if term not in association_matrix.keys():
+                continue
+            lst = association_matrix[term]
             idx_max_val = lst.index(max(lst))
-            expansion.append(cls.relevant_terms[idx_max_val])
+            relevant_terms = sorted(association_matrix, key=association_matrix.get, reverse=True)
+            expansion.append(relevant_terms[idx_max_val])
 
         return query.extend(expansion)
 

@@ -1,3 +1,4 @@
+import pickle
 import time
 import utils
 from configuration import ConfigClass
@@ -44,7 +45,7 @@ def run_engine():
                     exist_in_doc = True
 
         parsed_documents.append(parsed_document)
-        limit_to_index = 10000
+        limit_to_index = 500000
         if len(parsed_documents) == limit_to_index:
             indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                                 counter_check)
@@ -82,10 +83,10 @@ def search_and_rank_query(query, inverted_index, k):
     p = Parse()
     query_as_list = p.parse_sentence(query)
     searcher = Searcher(inverted_index)
-    matrix = GlobalMethod.build_matrix()
+    # matrix = GlobalMethod.build_matrix()
     # for key, value in matrix.items():
     #     print(key, ' : ', value)
-    query_as_list = GlobalMethod.expand_query(query_as_list)
+    GlobalMethod.expand_query(query_as_list)
     relevant_docs, normalized_query = searcher.relevant_docs_from_posting(query_as_list, num_of_docs_in_corpus)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs, normalized_query)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
