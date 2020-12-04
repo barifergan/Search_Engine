@@ -32,13 +32,14 @@ def extract_from_posting_file(term, rows_num, output_path):
                 if key not in dict_to_return:
                     dict_to_return[key] = []
 
-                dict_to_return[key].append(val)
+                dict_to_return[key].extend(val)
                 rows.remove(rows[0])
 
                 if not rows:
                     break
             lines_counter += 1
-    return dict_to_return
+    val_to_return = dict_to_return[key]
+    return val_to_return
 
 
 class GlobalMethod(object):
@@ -56,14 +57,9 @@ class GlobalMethod(object):
         for term in inverted_idx.keys():
             all_df.append(inverted_idx[term][0])
 
-        # avg = sum(all_df) / len(all_df)
-        # stddev = statistics.stdev(all_df)
-        # lower_threshold = abs(avg - (stddev / 2))
-        # upper_threshold = abs(avg + (stddev / 2))
-
         # sorted_inverted_idx = sorted(inverted_idx.items(), key=lambda item: item[1][0], reverse=True)
         sorted_inverted_idx = sorted(inverted_idx, key=inverted_idx.get, reverse=True)
-        cls.relevant_terms = sorted_inverted_idx[:4500]
+        cls.relevant_terms = sorted_inverted_idx[:100]
 
         # for term in inverted_idx.keys():
         #     if lower_threshold < inverted_idx[term][0] < upper_threshold:
@@ -79,8 +75,11 @@ class GlobalMethod(object):
             words_dict[word] = []
             lines_in_posting = inverted_idx[word][1] #all the lines that this word appear in posting file
 
-            posting_doc = extract_from_posting_file(word, lines_in_posting, ConfigClass.get__outputPath()) # 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\WithStem'
-            words_dict[word] = posting_doc[word][0]
+            if not lines_in_posting:
+                print(word , inverted_idx[word])
+
+            docs_list = extract_from_posting_file(word, lines_in_posting, ConfigClass.get__outputPath()) # 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\WithStem'
+            words_dict[word] = docs_list
 
             for key_word in words_dict.keys():
                 if key_word == word or key_word == word.upper() or key_word == word.lower():
@@ -97,14 +96,29 @@ class GlobalMethod(object):
                         for val2 in words_dict[key_word]:
                             if val1[0] == val2[0]:
                                 cij += val1[1] * val2[1]
-                        idx_i = relevant_words.index(key_word)
-                        idx_j = relevant_words.index(word)
-                        cii = cls.associations_matrix[idx_i][idx_i]
-                        cjj = cls.associations_matrix[idx_j][idx_j]
-                        sij = cij / (cii + cjj - cij)
-                        cls.associations_matrix[key_word][idx_j] = sij
-                        cls.associations_matrix[word][idx_i] = sij
+                        idx_i = relevant_words.index(word)
+                        idx_j = relevant_words.index(key_word)
+                        cls.associations_matrix[key_word][idx_i] = cij
+                        cls.associations_matrix[word][idx_j] = cij
 
+        for row in cls.associations_matrix.keys():
+            for idx_col in range(len(cls.associations_matrix[row])):
+                idx_row = relevant_words.index(row)
+                col = relevant_words[idx_col]
+
+                cii = cls.associations_matrix[row][idx_row]
+                cjj = cls.associations_matrix[col][idx_col]
+                cij = cls.associations_matrix[row][idx_col]
+                if row != col:
+                    demon = (cii + cjj - cij)
+                    if demon == 0:
+                        print('problem!!!!!!!!!!', cii, cjj, cij)
+                    else:
+
+                        sij = cij / demon
+                        cls.associations_matrix[row][idx_col] = sij
+
+                #
         utils.save_obj(cls.associations_matrix, "associations_matrix")
 
         end_time = time.time()
