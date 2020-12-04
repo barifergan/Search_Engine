@@ -1,14 +1,10 @@
 import copy
 import json
 import math
-import pickle
-
 import numpy as np
-
 from configuration import ConfigClass
 from parser_module import Parse
 from ranker import Ranker
-import utils
 
 
 class Searcher:
@@ -35,9 +31,11 @@ class Searcher:
         query_dict = {}  # to check how many times word appear in the query
         for term in query:
             try:
-                if term.lower() in self.inverted_index.keys():
+                if term in self.inverted_index.keys():
+                    temp_term = term
+                elif term.lower() in self.inverted_index.keys():
                     temp_term = term.lower()
-                elif term.upper() not in self.inverted_index.keys():
+                elif term.upper() in self.inverted_index.keys():
                     temp_term = term.upper()
                 else:
                     continue
@@ -65,7 +63,6 @@ class Searcher:
             except:
                 print('term {} not found in posting'.format(term))
 
-
         idf = []
         query_vec = []
 
@@ -80,9 +77,6 @@ class Searcher:
                 if word in self.inverted_index.keys():
                     dfi = self.inverted_index[word][0]
                     idf.append(math.log(num_of_docs_in_corpus / dfi, 2))
-                    # TODO: check the problem here!!!!!!!!!!!! (ValueError: shapes (10,) and (8,) not aligned: 10 (dim 0) != 8 (dim 0))
-                # else:
-                #     idf.append(0)
 
                     for doc in docs_content.keys():
                         exist = False

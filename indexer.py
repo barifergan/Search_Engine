@@ -19,6 +19,7 @@ class Indexer:
         self.docs_dict = {}
         # utils.save_json('docs_dict')
         self.stop_words = stopwords.words('english')
+        self.stop_words.extend(['https', 'http', 'rt', 'www', 't.co', 'u'])
         self.num_of_docs_in_corpus = 0
         for c in ascii_lowercase:
             self.file_line_indexes[c] = 1
@@ -145,12 +146,13 @@ class Indexer:
             if sorted_posting_keys[i][0].isalpha():
                 curr_char = sorted_posting_keys[i][0].lower()
                 with open(output_path + '\\' + curr_char + '.json', 'a') as outfile:
-                    while i < len(sorted_posting_keys) and sorted_posting_keys[i][0].lower() == curr_char:
+                    while i < len(sorted_posting_keys):
                         if sorted_posting_keys[i][0].lower() == curr_char:
                             json.dump({sorted_posting_keys[i]: self.postingDict[sorted_posting_keys[i]]}, outfile)
                             outfile.write('\n')
-                            to_add = ''
-                            if sorted_posting_keys[i].lower() in self.inverted_idx.keys():
+                            if ' ' in sorted_posting_keys[i]:
+                                to_add = sorted_posting_keys[i]
+                            elif sorted_posting_keys[i].lower() in self.inverted_idx.keys():
                                 to_add = sorted_posting_keys[i].lower()
                             elif sorted_posting_keys[i].upper() in self.inverted_idx.keys():
                                 to_add = sorted_posting_keys[i].upper()
@@ -158,10 +160,10 @@ class Indexer:
                                 to_add = sorted_posting_keys[i]
                             self.inverted_idx[to_add][1].append(self.file_line_indexes[curr_char])
                             self.file_line_indexes[curr_char] += 1
+
                             i += 1
-                        # else:
-                        #     i += 1
-                        #     break
+                        else:
+                            break
             elif sorted_posting_keys[i][0] == '#':
                 with open((output_path + '\\hashtag.json'), 'a') as outfile:
                     while i < len(sorted_posting_keys) and sorted_posting_keys[i][0] == '#':

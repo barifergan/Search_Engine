@@ -16,25 +16,18 @@ class Ranker:
         :param relevant_docs: dictionary of documents that contains at least one term from the query.
         :return: sorted list of documents by score
         """
+        ranked_results = {}
         for doc in relevant_docs:
-            ranked_results = {}
-            norm_docs = norm(relevant_docs[doc])
-            norm_query = norm(normalized_query_vec)
-            cos_sim = dot(relevant_docs[doc], normalized_query_vec) / (norm_docs * norm_query)
+            # norm_docs = norm(relevant_docs[doc])
+            # norm_query = norm(normalized_query_vec)
+            # cos_sim = dot(relevant_docs[doc], normalized_query_vec) / (norm_docs * norm_query)
+            sum_wij = sum(relevant_docs[doc])
+            sum_wij2 = sum([x ** 2 for x in relevant_docs[doc]])
+            sum_wiq2 = len(relevant_docs[doc])
+            cos_sim = sum_wij / math.sqrt(sum_wij2 * sum_wiq2)
             ranked_results[doc] = cos_sim
 
-        # results = {}
-        # for doc in relevant_docs:
-        #     sum_wij = sum(relevant_docs[doc])
-        #     sum_wij2 = sum([x ** 2 for x in relevant_docs[doc]])
-        #     sum_wiq2 = len(relevant_docs[doc])
-        #     if sum_wij2 != 0:
-        #         cos_sim = sum_wij / math.sqrt(sum_wij2 * sum_wiq2)
-        #         results[doc] = cos_sim
-
         return sorted(ranked_results.items(), key=lambda item: item[1], reverse=True)
-
-        # sorted_ranked_docs = {k: v for k, v in sorted(ranked_results.items(), key=lambda item: item[1], 1 /  reverse=True)
 
     @staticmethod
     def retrieve_top_k(sorted_relevant_doc, k=1):

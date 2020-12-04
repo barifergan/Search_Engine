@@ -1,3 +1,4 @@
+import json
 import time
 import utils
 from configuration import ConfigClass
@@ -108,17 +109,18 @@ def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
         ConfigClass.set__outputPath(output_path + ConfigClass.saveFilesWithoutStem)
 
     ConfigClass.set__corpusPath(corpus_path)
-    # ConfigClass.set__outputPath(output_path)
     ConfigClass.set__toStem(stemming)
 
-    # run_engine()
+    run_engine()
+
 
     # end_time = time.time()
     # print("--- %s seconds ---" % (end_time - start_time))
 
     inverted_index = load_index()
 
-    temp = sorted(inverted_index.keys(), reverse=True)
+    temp = sorted(inverted_index)
+
 
     if isinstance(queries, list):
         line_number = 0
