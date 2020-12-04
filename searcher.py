@@ -64,12 +64,12 @@ class Searcher:
                 print('term {} not found in posting'.format(term))
 
         idf = []
-        query_vec = []
-
-        for term in query_dict:
-            query_vec.append(query_dict[term])
-
-        normalized_query = np.divide(query_vec, max(query_vec))
+        # query_vec = []
+        #
+        # for term in query_dict:
+        #     query_vec.append(query_dict[term])
+        #
+        # normalized_query = np.divide(query_vec, max(query_vec))
         for word in query_dict.keys():
             try:
                 if word in self.inverted_index.keys():
@@ -106,7 +106,7 @@ class Searcher:
 
         # return relevant docs
 
-        return relevant_docs, normalized_query
+        return relevant_docs  # , normalized_query
 
     def extract_from_posting_file(self, term, rows_num):
         if term[0].isalpha():
