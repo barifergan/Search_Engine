@@ -1,4 +1,3 @@
-import json
 import time
 import utils
 from configuration import ConfigClass
@@ -20,17 +19,10 @@ def run_engine():
     indexer = Indexer(config)
     names_and_entities = {}
 
-    corpus_path = ConfigClass.get__corpusPath()
+    # corpus_path = ConfigClass.get__corpusPath()
     parsed_documents = []
     counter_check = 1
     num_of_docs_in_corpus = 0
-
-    # for subdir, dirs, files in os.walk(corpus_path):
-    #     r = ReadFile(subdir)
-    #     for file in files:
-    #         file_type = file[-8:]
-    #         if file_type == '.parquet':
-    #             file_name = file
 
     documents_list = r.read_folder(folder_name=config.get__corpusPath())
     for idx, document in enumerate(documents_list):
@@ -89,12 +81,11 @@ def search_and_rank_query(query, inverted_index, k):
 
     p = Parse()
     query_as_list = p.parse_sentence(query)
-    # print(query_as_list)
     searcher = Searcher(inverted_index)
-    # matrix = GlobalMethod.build_matrix()
+    matrix = GlobalMethod.build_matrix()
     # for key, value in matrix.items():
     #     print(key, ' : ', value)
-    # query_as_list = GlobalMethod.expand_query(query_as_list)
+    query_as_list = GlobalMethod.expand_query(query_as_list)
     relevant_docs, normalized_query = searcher.relevant_docs_from_posting(query_as_list, num_of_docs_in_corpus)
     ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs, normalized_query)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
@@ -102,25 +93,16 @@ def search_and_rank_query(query, inverted_index, k):
 
 def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
 
-    # start_time = time.time()
+    ConfigClass.set__corpusPath(corpus_path)
+    ConfigClass.set__toStem(stemming)
     if stemming:
         ConfigClass.set__outputPath(output_path + ConfigClass.saveFilesWithStem)
     else:
         ConfigClass.set__outputPath(output_path + ConfigClass.saveFilesWithoutStem)
 
-    ConfigClass.set__corpusPath(corpus_path)
-    ConfigClass.set__toStem(stemming)
-
     run_engine()
 
-
-    # end_time = time.time()
-    # print("--- %s seconds ---" % (end_time - start_time))
-
     inverted_index = load_index()
-
-    temp = sorted(inverted_index)
-
 
     if isinstance(queries, list):
         line_number = 0

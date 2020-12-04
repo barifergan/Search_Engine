@@ -69,8 +69,6 @@ class Searcher:
         for term in query_dict:
             query_vec.append(query_dict[term])
 
-        print(query_dict)
-        mx = max(query_vec)
         normalized_query = np.divide(query_vec, max(query_vec))
         for word in query_dict.keys():
             try:

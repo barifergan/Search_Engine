@@ -1,6 +1,5 @@
-from nltk import RegexpTokenizer, TweetTokenizer
+from nltk import TweetTokenizer
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 from document import Document
 from configuration import ConfigClass
 from stemmer import Stemmer
@@ -12,7 +11,7 @@ class Parse:
 
     def __init__(self):
         self.stop_words = stopwords.words('english')
-        self.stop_words.extend(['https', 'http', 'rt', 'www', 't.co', 'u'])
+        self.stop_words.append('u')
         self.stemming = ConfigClass.get__toStem()
 
     def parse_doc(self, doc_as_list):
@@ -99,7 +98,7 @@ class Parse:
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
 
-        symbols = '.,...,:;{}()[]"*?!&$-_/\''
+        symbols = '.,...,:;{}()[]"*?!&$%+-_/\''
         text_tokens_without_stopwords = [w for w in text_tokens if
                                          w.lower() not in self.stop_words and w not in symbols]
 
@@ -270,7 +269,7 @@ class Parse:
     # url
     def parse_url(self, token):
 
-        url_parts = re.split('/|[{]|}|[*]|%|://|:|=|"|-|[?]|#|[$]', token)
+        url_parts = re.split('/|[{]|}|[*]|%|://|:|=|"|-|[?]|#|[$]|%|[+]', token)
 
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
