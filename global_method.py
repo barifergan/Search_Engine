@@ -1,4 +1,6 @@
+import copy
 import json
+import operator
 import pickle
 import time
 from configuration import ConfigClass
@@ -18,11 +20,12 @@ def extract_from_posting_file(term, rows_num, output_path):
     else:
         file_name = 'other'
 
+    rows = copy.deepcopy(rows_num)
     with open(output_path + '\\' + file_name + '.json') as f:
         lines_counter = 1
         dict_to_return = {}
         for line in f:
-            if lines_counter == rows_num[0]:
+            if lines_counter == rows[0]:
                 j_content = json.loads(line)
                 key = [*j_content][0]
                 val = j_content[key]
@@ -30,9 +33,9 @@ def extract_from_posting_file(term, rows_num, output_path):
                     dict_to_return[key] = []
 
                 dict_to_return[key].append(val)
-                rows_num.remove(rows_num[0])
+                rows.remove(rows[0])
 
-                if not rows_num:
+                if not rows:
                     break
             lines_counter += 1
     return dict_to_return
@@ -53,14 +56,18 @@ class GlobalMethod(object):
         for term in inverted_idx.keys():
             all_df.append(inverted_idx[term][0])
 
-        avg = sum(all_df) / len(all_df)
-        stddev = statistics.stdev(all_df)
-        lower_threshold = abs(avg - (stddev / 2))
-        upper_threshold = abs(avg + (stddev / 2))
+        # avg = sum(all_df) / len(all_df)
+        # stddev = statistics.stdev(all_df)
+        # lower_threshold = abs(avg - (stddev / 2))
+        # upper_threshold = abs(avg + (stddev / 2))
 
-        for term in inverted_idx.keys():
-            if lower_threshold < inverted_idx[term][0] < upper_threshold:
-                cls.relevant_terms.append(term)
+        # sorted_inverted_idx = sorted(inverted_idx.items(), key=lambda item: item[1][0], reverse=True)
+        sorted_inverted_idx = sorted(inverted_idx, key=inverted_idx.get, reverse=True)
+        cls.relevant_terms = sorted_inverted_idx[:4500]
+
+        # for term in inverted_idx.keys():
+        #     if lower_threshold < inverted_idx[term][0] < upper_threshold:
+        #         cls.relevant_terms.append(term)
 
         relevant_words = sorted(cls.relevant_terms)
 
@@ -92,8 +99,11 @@ class GlobalMethod(object):
                                 cij += val1[1] * val2[1]
                         idx_i = relevant_words.index(key_word)
                         idx_j = relevant_words.index(word)
-                        cls.associations_matrix[key_word][idx_j] = cij
-                        cls.associations_matrix[word][idx_i] = cij
+                        cii = cls.associations_matrix[idx_i][idx_i]
+                        cjj = cls.associations_matrix[idx_j][idx_j]
+                        sij = cij / (cii + cjj - cij)
+                        cls.associations_matrix[key_word][idx_j] = sij
+                        cls.associations_matrix[word][idx_i] = sij
 
         utils.save_obj(cls.associations_matrix, "associations_matrix")
 
