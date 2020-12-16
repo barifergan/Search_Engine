@@ -9,7 +9,7 @@ class Ranker:
         pass
 
     @staticmethod
-    def rank_relevant_doc(relevant_docs): #,normalized_query_vec):
+    def rank_relevant_doc(relevant_docs):
         """
         This function provides rank for each relevant document and sorts them by their scores.
         The current score considers solely the number of terms shared by the tweet (full_text) and query.
@@ -18,9 +18,6 @@ class Ranker:
         """
         ranked_results = {}
         for doc in relevant_docs:
-            # norm_docs = norm(relevant_docs[doc])
-            # norm_query = norm(normalized_query_vec)
-            # cos_sim = dot(relevant_docs[doc], normalized_query_vec) / (norm_docs * norm_query)
             sum_wij = sum(relevant_docs[doc])
             sum_wij2 = sum([x ** 2 for x in relevant_docs[doc]])
             sum_wiq2 = len(relevant_docs[doc])

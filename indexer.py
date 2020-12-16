@@ -1,10 +1,7 @@
 import json
-from configuration import ConfigClass
 from string import ascii_lowercase
 
 from nltk.corpus import stopwords
-
-import utils
 
 
 class Indexer:

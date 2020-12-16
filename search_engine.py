@@ -1,3 +1,4 @@
+import os
 import pickle
 import time
 import utils
@@ -11,8 +12,6 @@ import pandas as pd
 
 
 def run_engine():
-
-    start_time = time.time()
 
     config = ConfigClass()
     r = ReadFile(ConfigClass.get__corpusPath())
@@ -49,7 +48,7 @@ def run_engine():
         if len(parsed_documents) == limit_to_index:
             indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                                 counter_check)
-            print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
+            # print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
             counter_check += 1
             parsed_documents = []
             num_of_docs_in_corpus += limit_to_index
@@ -57,21 +56,16 @@ def run_engine():
     if len(parsed_documents) > 0:
         indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                             counter_check)
-        print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
+        # print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
         counter_check += 1
         parsed_documents = []
         num_of_docs_in_corpus += limit_to_index
 
-    print('Finished parsing and indexing. Starting to export files')
-
     utils.save_obj(indexer.inverted_idx, "inverted_idx")
-
-    end_parse_index_time = time.time()
-    print("--- %s seconds ---" % (end_parse_index_time - start_time))
 
 
 def load_index():
-    print('Load inverted index')
+    # print('Load inverted index')
     inverted_index = utils.load_obj("inverted_idx")
     return inverted_index
 
@@ -84,11 +78,10 @@ def search_and_rank_query(query, inverted_index, k):
     query_as_list = p.parse_sentence(query)
     searcher = Searcher(inverted_index)
     # matrix = GlobalMethod.build_matrix()
-    # for key, value in matrix.items():
-    #     print(key, ' : ', value)
     GlobalMethod.expand_query(query_as_list)
-    relevant_docs, normalized_query = searcher.relevant_docs_from_posting(query_as_list, num_of_docs_in_corpus)
-    ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs, normalized_query)
+    relevant_docs = searcher.relevant_docs_from_posting(query_as_list, num_of_docs_in_corpus)
+
+    ranked_docs = searcher.ranker.rank_relevant_doc(relevant_docs)
     return searcher.ranker.retrieve_top_k(ranked_docs, k)
 
 
@@ -105,23 +98,21 @@ def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
 
     inverted_index = load_index()
 
+    line_number = 1
+    data_to_csv = pd.DataFrame(columns=['query number', 'tweet id', 'Rank'])
+
     if isinstance(queries, list):
-        line_number = 0
         for query in queries:
             for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve):
-                print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
-                data_to_excel = pd.DataFrame({'query number': line_number}, {'tweet id': doc_tuple[0]},
-                                             {'Rank': doc_tuple[1]})
-                # data_to_excel.to_excel('csv_report.xlsx')
+                data_to_csv.append({'query number': line_number, 'tweet id': doc_tuple[0], 'Rank': doc_tuple[1]}, ignore_index=True)
             line_number += 1
+        # data_to_csv.to_csv('result.csv', index=False)
 
     else:
         with open(queries, encoding="utf8") as f:
-            line_number = 0
             for line in f.readlines():
                 if line != '\n':
                     for doc_tuple in search_and_rank_query(line, inverted_index, num_docs_to_retrieve):
-                        print('tweet id: {}, score (unique common words with query): {}'.format(doc_tuple[0], doc_tuple[1]))
-                        data_to_excel = pd.DataFrame({'query number': line_number}, {'tweet id': doc_tuple[0]}, {'Rank': doc_tuple[1]})
-                        # data_to_excel.to_excel('csv report.xlsx')
+                        data_to_csv = data_to_csv.append({'query number': line_number, 'tweet id': doc_tuple[0], 'Rank': doc_tuple[1]}, ignore_index=True)
                     line_number += 1
+            # data_to_csv.to_csv('result.csv', index=False)
