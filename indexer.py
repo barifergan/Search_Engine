@@ -1,4 +1,5 @@
 import json
+import string
 from string import ascii_lowercase
 
 from nltk.corpus import stopwords
@@ -15,7 +16,8 @@ class Indexer:
         self.file_line_indexes = {}
         self.docs_dict = {}
         self.stop_words = stopwords.words('english')
-        self.stop_words.extend(['https', 'http', 'rt', 'www', 't.co', 'u'])
+        self.stop_words.extend(['https', 'http', 'rt', 'www', 't.co'])
+        self.stop_words.extend(list(string.ascii_lowercase))
         self.num_of_docs_in_corpus = 0
         for c in ascii_lowercase:
             self.file_line_indexes[c] = 1
@@ -60,7 +62,8 @@ class Indexer:
                                     if temp_term in self.waiting_list.keys():
                                         self.inverted_idx[temp_term][0] += 1
                                         self.postingDict[temp_term].append(
-                                            (self.waiting_list[temp_term][0], self.waiting_list[temp_term][1], self.waiting_list[temp_term][2]))
+                                            (self.waiting_list[temp_term][0], self.waiting_list[temp_term][1],
+                                             self.waiting_list[temp_term][2]))
                                         del (self.waiting_list[temp_term])
                                 else:
                                     temp_term = term
@@ -72,9 +75,13 @@ class Indexer:
                         elif term.lower() in self.inverted_idx.keys():
                             temp_term = term.lower()
                             self.inverted_idx[temp_term][0] += 1
+                            if temp_term not in self.postingDict.keys():
+                                self.postingDict[temp_term] = []
                         elif term.upper() in self.inverted_idx.keys():
                             temp_term = term.upper()
                             self.inverted_idx[temp_term][0] += 1
+                            if temp_term not in self.postingDict.keys():
+                                self.postingDict[temp_term] = []
                         else:
                             temp_term = term.upper()
                             self.inverted_idx[temp_term] = [1, []]
@@ -86,8 +93,13 @@ class Indexer:
                         if term not in self.inverted_idx.keys():
                             self.inverted_idx[temp_term] = [1, []]
                             self.postingDict[temp_term] = []
+                        elif term not in self.postingDict.keys():
+                            self.postingDict[temp_term] = []
+                            self.inverted_idx[temp_term][0] += 1
                         else:
                             self.inverted_idx[temp_term][0] += 1
+
+
 
                     # first char is @
                     elif term[0] == '@':
@@ -95,16 +107,28 @@ class Indexer:
                         if term not in self.inverted_idx.keys():
                             self.inverted_idx[temp_term] = [1, []]
                             self.postingDict[temp_term] = []
+                        elif term not in self.postingDict.keys():
+                            self.postingDict[temp_term] = []
+                            self.inverted_idx[temp_term][0] += 1
                         else:
                             self.inverted_idx[temp_term][0] += 1
+
+                    # other
                     else:
                         if term.lower() in self.inverted_idx.keys():
                             temp_term = term.lower()
                             self.inverted_idx[temp_term][0] += 1
+                            if temp_term not in self.postingDict.keys():
+                                self.postingDict[temp_term] = []
                         elif term.upper() in self.inverted_idx.keys():
                             temp_term = term.lower()
                             self.inverted_idx[temp_term] = self.inverted_idx[term.upper()]
                             del (self.inverted_idx[term.upper()])
+                            if term.upper() not in self.postingDict.keys():
+                                self.postingDict[temp_term] = []
+                            else:
+                                self.postingDict[temp_term] = self.postingDict[term.upper()]
+                                del (self.postingDict[term.upper()])
                         else:
                             temp_term = term.lower()
                             self.inverted_idx[temp_term] = [1, []]
@@ -113,6 +137,7 @@ class Indexer:
                     if temp_term in self.postingDict.keys():
                         self.postingDict[temp_term].append((d.tweet_id, document_dictionary[term], index_in_text))
                     term_num_check += 1
+
                 except:
                     print('problem with the following key {}'.format(term))
                     print(document_dictionary.keys())
@@ -121,7 +146,8 @@ class Indexer:
 
             if document_dictionary:  # if dict isn't empty
                 self.docs_dict[d.tweet_id] = (
-                    document_dictionary[max(document_dictionary, key=document_dictionary.get)], d.tweet_date, count_unique_words)
+                    document_dictionary[max(document_dictionary, key=document_dictionary.get)], d.tweet_date,
+                    count_unique_words)
 
         with open('docs_dict.json', 'a') as outfile:
             for key in self.docs_dict.keys():
@@ -181,7 +207,9 @@ class Indexer:
                         i += 1
             else:
                 with open((output_path + '\\other.json'), 'a') as outfile:
-                    while i < len(sorted_posting_keys) and not sorted_posting_keys[i][0].isalpha() and not sorted_posting_keys[i][0] == '@' and not sorted_posting_keys[i][0].isdigit() and not sorted_posting_keys[i][0] == '#':
+                    while i < len(sorted_posting_keys) and not sorted_posting_keys[i][0].isalpha() and not \
+                    sorted_posting_keys[i][0] == '@' and not sorted_posting_keys[i][0].isdigit() and not \
+                    sorted_posting_keys[i][0] == '#':
                         json.dump({sorted_posting_keys[i]: self.postingDict[sorted_posting_keys[i]]}, outfile)
                         outfile.write('\n')
                         self.inverted_idx[sorted_posting_keys[i]][1].append(self.file_line_indexes['other'])

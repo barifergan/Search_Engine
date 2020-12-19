@@ -44,11 +44,11 @@ def run_engine():
                     exist_in_doc = True
 
         parsed_documents.append(parsed_document)
-        limit_to_index = 500000
+        limit_to_index = 1000000
         if len(parsed_documents) == limit_to_index:
             indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                                 counter_check)
-            # print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
+            print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
             counter_check += 1
             parsed_documents = []
             num_of_docs_in_corpus += limit_to_index
@@ -72,7 +72,7 @@ def load_index():
 
 def search_and_rank_query(query, inverted_index, k):
 
-    num_of_docs_in_corpus = 10000000
+    num_of_docs_in_corpus = 1000000
 
     p = Parse()
     query_as_list = p.parse_sentence(query)
@@ -94,7 +94,10 @@ def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
     else:
         ConfigClass.set__outputPath(output_path + ConfigClass.saveFilesWithoutStem)
 
+    start_time = time.time()
     run_engine()
+    end_time = time.time()
+    print("--- %s seconds ---" % (end_time - start_time))
 
     inverted_index = load_index()
 
@@ -106,7 +109,7 @@ def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
             for doc_tuple in search_and_rank_query(query, inverted_index, num_docs_to_retrieve):
                 data_to_csv.append({'query number': line_number, 'tweet id': doc_tuple[0], 'Rank': doc_tuple[1]}, ignore_index=True)
             line_number += 1
-        # data_to_csv.to_csv('result.csv', index=False)
+        data_to_csv.to_csv('result.csv', index=False)
 
     else:
         with open(queries, encoding="utf8") as f:
@@ -115,4 +118,4 @@ def main(corpus_path, output_path, stemming, queries, num_docs_to_retrieve):
                     for doc_tuple in search_and_rank_query(line, inverted_index, num_docs_to_retrieve):
                         data_to_csv = data_to_csv.append({'query number': line_number, 'tweet id': doc_tuple[0], 'Rank': doc_tuple[1]}, ignore_index=True)
                     line_number += 1
-            # data_to_csv.to_csv('result.csv', index=False)
+            data_to_csv.to_csv('result.csv', index=False)

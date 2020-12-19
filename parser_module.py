@@ -98,7 +98,7 @@ class Parse:
         tweet_tokenizer = TweetTokenizer()
         text_tokens = tweet_tokenizer.tokenize(re.sub(r'[^\x00-\x7f]', r' ', text))
 
-        symbols = '.,...,:;{}()[]"*?!&$%+-_/\''
+        symbols = '.,...,:;{}()[]"*?!&$%+-_=></\''
         text_tokens_without_stopwords = [w for w in text_tokens if
                                          w.lower() not in self.stop_words and w not in symbols]
 
@@ -195,7 +195,9 @@ class Parse:
 
             i += 1
 
-        while '' in after_parse: after_parse.remove('')
+        # while '' in after_parse: after_parse.remove('')
+        after_parse = [w for w in after_parse if w not in symbols or w != '']
+
 
         return after_parse
 

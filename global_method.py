@@ -1,3 +1,4 @@
+import collections
 import copy
 import json
 import operator
@@ -6,6 +7,7 @@ import time
 from configuration import ConfigClass
 import utils
 import statistics
+from tqdm import tqdm
 
 
 def extract_from_posting_file(term, rows_num, output_path):
@@ -21,6 +23,7 @@ def extract_from_posting_file(term, rows_num, output_path):
         file_name = 'other'
 
     rows = copy.deepcopy(rows_num)
+    docs_set = set()
     with open(output_path + '\\' + file_name + '.json') as f:
         lines_counter = 1
         dict_to_return = {}
@@ -33,13 +36,15 @@ def extract_from_posting_file(term, rows_num, output_path):
                     dict_to_return[key] = []
 
                 dict_to_return[key].extend(val)
+                for curr_doc in val:
+                    docs_set.add(curr_doc[0])
                 rows.remove(rows[0])
 
                 if not rows:
                     break
             lines_counter += 1
     val_to_return = dict_to_return[key]
-    return val_to_return
+    return val_to_return, docs_set
 
 
 class GlobalMethod(object):
@@ -50,38 +55,47 @@ class GlobalMethod(object):
     def build_matrix(cls):
 
         start_time = time.time()
+        print('load inverted index')
         with open('inverted_idx.pkl', 'rb') as inverted_idx:
             inverted_idx = pickle.load(inverted_idx)
+        print('inverted index loaded')
 
         all_df = []
         for term in inverted_idx.keys():
             all_df.append(inverted_idx[term][0])
+        df = sorted(all_df, reverse=True)
+        print(df[:4000])
 
-        # sorted_inverted_idx = sorted(inverted_idx.items(), key=lambda item: item[1][0], reverse=True)
         sorted_inverted_idx = sorted(inverted_idx, key=inverted_idx.get, reverse=True)
-        cls.relevant_terms = sorted_inverted_idx[:100]
+
+        cls.relevant_terms = sorted_inverted_idx[:4000]
 
         # for term in inverted_idx.keys():
         #     if lower_threshold < inverted_idx[term][0] < upper_threshold:
         #         cls.relevant_terms.append(term)
 
         relevant_words = sorted(cls.relevant_terms)
-
+        print(cls.relevant_terms)
+        print(relevant_words)
         # associations_matrix = np.zeros(shape=(len(relevant_words), len(relevant_words)), dtype=int)
         cls.associations_matrix = {i: [0] * len(relevant_words) for i in relevant_words}
+        print('association matrix build with zeros')
         words_dict = {}
+        docs_sets_dict = {}
 
-        for word in relevant_words:
+        for word in tqdm(relevant_words):
             words_dict[word] = []
-            lines_in_posting = inverted_idx[word][1] #all the lines that this word appear in posting file
+            lines_in_posting = inverted_idx[word][1]  # all the lines that this word appear in posting file
 
             if not lines_in_posting:
-                print(word , inverted_idx[word])
+                print(word, inverted_idx[word])
 
-            docs_list = extract_from_posting_file(word, lines_in_posting, ConfigClass.get__outputPath()) # 'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\WithStem'
+            docs_list, docs_set = extract_from_posting_file(word, lines_in_posting,
+                                                            'C:\\Users\\barif\\PycharmProjects\\Search_Engine\\WithoutStem')  # ConfigClass.get__outputPath())
             words_dict[word] = docs_list
+            docs_sets_dict[word] = docs_set
 
-            for key_word in words_dict.keys():
+            for key_word in tqdm(words_dict.keys()):
                 if key_word == word or key_word == word.upper() or key_word == word.lower():
                     cii = 0
                     for val in words_dict[key_word]:
@@ -92,16 +106,35 @@ class GlobalMethod(object):
 
                 else:
                     cij = 0
-                    for val1 in words_dict[word]:
+                    common_docs = docs_sets_dict[word].intersection(docs_sets_dict[key_word])
+                    for doc in common_docs:
+                        temp_cij = 0
+                        for val in words_dict[word]:
+                            if val[0] == doc:
+                                temp_cij = val[1]
                         for val2 in words_dict[key_word]:
-                            if val1[0] == val2[0]:
-                                cij += val1[1] * val2[1]
-                        idx_i = relevant_words.index(word)
-                        idx_j = relevant_words.index(key_word)
-                        cls.associations_matrix[key_word][idx_i] = cij
-                        cls.associations_matrix[word][idx_j] = cij
+                            if val2[0] == doc:
+                                temp_cij = temp_cij * val2[1]
+                        cij += temp_cij
 
-        for row in cls.associations_matrix.keys():
+                    idx_i = relevant_words.index(word)
+                    idx_j = relevant_words.index(key_word)
+                    cls.associations_matrix[key_word][idx_i] = cij
+                    cls.associations_matrix[word][idx_j] = cij
+
+
+                    # for val1 in words_dict[word]:
+                    #     for val2 in words_dict[key_word]:
+                    #         if val1[0] == val2[0]:
+                    #             cij += val1[1] * val2[1]
+                    #     idx_i = relevant_words.index(word)
+                    #     idx_j = relevant_words.index(key_word)
+                    #     cls.associations_matrix[key_word][idx_i] = cij
+                    #     cls.associations_matrix[word][idx_j] = cij
+
+        print('association matrix build without normalize')
+
+        for row in tqdm(cls.associations_matrix.keys()):
             for idx_col in range(len(cls.associations_matrix[row])):
                 idx_row = relevant_words.index(row)
                 col = relevant_words[idx_col]
@@ -111,14 +144,12 @@ class GlobalMethod(object):
                 cij = cls.associations_matrix[row][idx_col]
                 if row != col:
                     demon = (cii + cjj - cij)
-                    if demon == 0:
-                        print('problem!!!!!!!!!!', cii, cjj, cij)
-                    else:
+                    sij = cij / demon
+                    cls.associations_matrix[row][idx_col] = sij
 
-                        sij = cij / demon
-                        cls.associations_matrix[row][idx_col] = sij
+        print('association matrix build with normalize')
 
-                #
+        #
         utils.save_obj(cls.associations_matrix, "associations_matrix")
 
         end_time = time.time()
@@ -132,17 +163,15 @@ class GlobalMethod(object):
         with open('associations_matrix.pkl', 'rb') as matrix_from_file:
             association_matrix = pickle.load(matrix_from_file)
         expansion = []
+        relevant_terms = sorted(association_matrix, key=association_matrix.get, reverse=True)
         for term in query:
             if term not in association_matrix.keys():
                 continue
             lst = association_matrix[term]
             idx_max_val = lst.index(max(lst))
-            relevant_terms = sorted(association_matrix, key=association_matrix.get, reverse=True)
             expansion.append(relevant_terms[idx_max_val])
 
         return query.extend(expansion)
 
 
-# matrix = GlobalMethod.build_matrix()
-# for key, value in matrix.items():
-#     print(key, ' : ', value)
+# GlobalMethod.build_matrix()
