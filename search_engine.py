@@ -1,3 +1,4 @@
+import datetime
 import os
 import pickle
 import time
@@ -46,9 +47,10 @@ def run_engine():
         parsed_documents.append(parsed_document)
         limit_to_index = 1000000
         if len(parsed_documents) == limit_to_index:
+            print('finish parse: ' + datetime.now())
             indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                                 counter_check)
-            print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files')
+            print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files: ' + datetime.now())
             counter_check += 1
             parsed_documents = []
             num_of_docs_in_corpus += limit_to_index

@@ -129,10 +129,10 @@ class Indexer:
                             else:
                                 self.postingDict[temp_term] = self.postingDict[term.upper()]
                                 del (self.postingDict[term.upper()])
-                        else:
-                            temp_term = term.lower()
-                            self.inverted_idx[temp_term] = [1, []]
-                            self.postingDict[temp_term] = []
+                        # else:
+                        #     temp_term = term.lower()
+                        #     self.inverted_idx[temp_term] = [1, []]
+                        #     self.postingDict[temp_term] = []
 
                     if temp_term in self.postingDict.keys():
                         self.postingDict[temp_term].append((d.tweet_id, document_dictionary[term], index_in_text))

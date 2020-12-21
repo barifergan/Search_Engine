@@ -129,13 +129,23 @@ class Parse:
 
         i = 0
         covid = ['COVID', 'COVID19', 'CORONAVIRUS', 'CORONA']
+        # while i < len(text_tokens_without_stopwords):
+        #     # covid rule
+        #     if text_tokens_without_stopwords[i].upper() in covid:
+        #         if i < len(text_tokens_without_stopwords) - 1 and (text_tokens_without_stopwords[i + 1] == '19' or
+        #                                                            text_tokens_without_stopwords[i + 1].upper() == 'VIRUS'):
+        #             i += 1
+        #         after_parse.append('covid19')
+
         while i < len(text_tokens_without_stopwords):
             # covid rule
-            if text_tokens_without_stopwords[i].upper() in covid:
+            if any(covid_exp in text_tokens_without_stopwords[i].upper() for covid_exp in covid):
                 if i < len(text_tokens_without_stopwords) - 1 and (text_tokens_without_stopwords[i + 1] == '19' or
-                                                                   text_tokens_without_stopwords[i + 1].upper() == 'VIRUS'):
+                                                                   text_tokens_without_stopwords[
+                                                                       i + 1].upper() == 'VIRUS'):
                     i += 1
-                after_parse.append('covid19')
+                after_parse.append('COVID19')
+
 
             # hashtag
             elif text_tokens_without_stopwords[i][0] == '#':
@@ -158,7 +168,9 @@ class Parse:
 
             # percent
             elif (i < len(text_tokens_without_stopwords) - 2 and (text_tokens_without_stopwords[i + 1] == 'percent' or
-                        text_tokens_without_stopwords[i + 1] == 'percentage')) or text_tokens_without_stopwords[i][-1] == '%':
+                                                                  text_tokens_without_stopwords[
+                                                                      i + 1] == 'percentage')) or \
+                    text_tokens_without_stopwords[i][-1] == '%':
                 if not text_tokens_without_stopwords[i][-1] == '%':
                     i += 1
                 percentage = self.parse_percentages(text_tokens_without_stopwords[i])
@@ -175,7 +187,8 @@ class Parse:
                     number = self.parse_numbers(curr_num, '')
                 else:
                     number = self.parse_numbers(curr_num, text_tokens_without_stopwords[i + 1])
-                    if text_tokens_without_stopwords[i + 1].lower() == 'thousand' or text_tokens_without_stopwords[i + 1].lower() == \
+                    if text_tokens_without_stopwords[i + 1].lower() == 'thousand' or text_tokens_without_stopwords[
+                        i + 1].lower() == \
                             'million' or text_tokens_without_stopwords[i + 1].lower() == 'billion':
                         i += 1
 
@@ -197,7 +210,6 @@ class Parse:
 
         # while '' in after_parse: after_parse.remove('')
         after_parse = [w for w in after_parse if w not in symbols or w != '']
-
 
         return after_parse
 
@@ -272,6 +284,7 @@ class Parse:
     def parse_url(self, token):
 
         url_parts = re.split('/|[{]|}|[*]|%|://|:|=|"|-|[?]|#|[$]|%|[+]', token)
+        url_parts_to_return = []
 
         for i in range(len(url_parts)):
             if 'www' in url_parts[i]:
@@ -281,8 +294,13 @@ class Parse:
                 url_parts.insert(i, sub_url1)
                 url_parts.insert(i + 1, sub_url2)
 
-        while '' in url_parts: url_parts.remove('')
-        return url_parts
+        for term in url_parts:
+            if '.' in term:
+                url_parts_to_return.append(term)
+
+        # while '' in url_parts: url_parts.remove('')
+        # return url_parts
+        return url_parts_to_return
 
     # tagging
     def parse_tagging(self, token):
