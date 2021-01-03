@@ -1,7 +1,10 @@
-import datetime
+from _datetime import datetime
 import os
 import pickle
 import time
+
+import pytz
+
 import utils
 from configuration import ConfigClass
 from global_method import GlobalMethod
@@ -13,7 +16,8 @@ import pandas as pd
 
 
 def run_engine():
-
+    # curr_time = datetime.now()
+    print('start parse: ', datetime.now())
     config = ConfigClass()
     r = ReadFile(ConfigClass.get__corpusPath())
     p = Parse()
@@ -45,12 +49,12 @@ def run_engine():
                     exist_in_doc = True
 
         parsed_documents.append(parsed_document)
-        limit_to_index = 1000000
+        limit_to_index = 50000
         if len(parsed_documents) == limit_to_index:
-            print('finish parse: ' + datetime.now())
+            print('finish parse: ', datetime.now())
             indexer.add_new_doc(parsed_documents, names_and_entities, ConfigClass.get__outputPath(),
                                 counter_check)
-            print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files: ' + datetime.now())
+            print('Parsed and indexed ' + str(counter_check * limit_to_index) + ' files: ', datetime.now())
             counter_check += 1
             parsed_documents = []
             num_of_docs_in_corpus += limit_to_index

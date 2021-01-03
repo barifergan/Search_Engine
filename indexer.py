@@ -101,8 +101,8 @@ class Indexer:
 
 
 
-                    # first char is @
-                    elif term[0] == '@':
+                    # first char is @ or #
+                    elif term[0] == '@' or term[0] == '#':
                         temp_term = term
                         if term not in self.inverted_idx.keys():
                             self.inverted_idx[temp_term] = [1, []]
@@ -129,6 +129,7 @@ class Indexer:
                             else:
                                 self.postingDict[temp_term] = self.postingDict[term.upper()]
                                 del (self.postingDict[term.upper()])
+
                         # else:
                         #     temp_term = term.lower()
                         #     self.inverted_idx[temp_term] = [1, []]
@@ -215,3 +216,22 @@ class Indexer:
                         self.inverted_idx[sorted_posting_keys[i]][1].append(self.file_line_indexes['other'])
                         self.file_line_indexes['other'] += 1
                         i += 1
+
+
+        # def merge_terms(key, value, row_num):
+        #     if key[0].isalpha():
+        #         file_name = key[0]
+        #     elif key[0] == '#':
+        #         file_name = 'hashtag'
+        #     elif key[0] == '@':
+        #         file_name = 'tagging'
+        #     elif key[0].isdigit():
+        #         file_name = 'number'
+        #     else:
+        #         file_name = 'other'
+
+            # with open(output_path + '\\' + file_name + '.json') as f:
+            #     lines_counter = 1
+            #     for line in f:
+                    # if lines_counter == row_num:
+

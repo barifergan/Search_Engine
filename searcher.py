@@ -1,4 +1,5 @@
 import copy
+import itertools
 import json
 import math
 import numpy as np
@@ -125,18 +126,27 @@ class Searcher:
         with open(self.output_path + '\\' + file_name + '.json') as f:
             lines_counter = 1
             dict_to_return = {}  # key: term, value:list of tweets id
-            for line in f:
-                if lines_counter == rows[0]:
-                    j_content = json.loads(line)
-                    key = [*j_content][0]
-                    val = j_content[key]
-                    if key not in dict_to_return:
-                        dict_to_return[key] = []
+            for row in rows:
+                line = next(itertools.islice(f, row - 1, row), None)
+                key = [*line][0]
+                val = line[key]
+                if key not in dict_to_return:
+                    dict_to_return[key] = []
 
-                    dict_to_return[key].append(val)
-                    rows.remove(rows[0])
+                dict_to_return[key].append(val)
 
-                    if not rows:
-                        break
-                lines_counter += 1
+            # for line in f:
+            #     if lines_counter == rows[0]:
+            #         j_content = json.loads(line)
+            #         key = [*j_content][0]
+            #         val = j_content[key]
+            #         if key not in dict_to_return:
+            #             dict_to_return[key] = []
+            #
+            #         dict_to_return[key].append(val)
+            #         rows.remove(rows[0])
+            #
+            #         if not rows:
+            #             break
+            #     lines_counter += 1
         return dict_to_return

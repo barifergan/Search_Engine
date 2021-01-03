@@ -1,5 +1,6 @@
 import collections
 import copy
+import itertools
 import json
 import operator
 import pickle
@@ -53,6 +54,11 @@ class GlobalMethod(object):
 
     @classmethod
     def build_matrix(cls):
+        #
+        # with open('C:\\Users\\barif\\PycharmProjects\\Search_Engine\\WithoutStem\\a' + '.json') as f:
+        #     line = next(itertools.islice(f, 20, 20 + 1), None)
+        #     # line = f.readline()
+        #     print(line)
 
         start_time = time.time()
         print('load inverted index')
